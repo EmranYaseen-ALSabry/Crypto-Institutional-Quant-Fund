@@ -36,6 +36,9 @@
         "key": "",
         "secret": "",
         "ccxt_config": {
+            "options": {
+                "fetchMarkets": ["spot"]
+            },
             "urls": {
                 "api": {
                     "public": "https://data-api.binance.vision/api/v3",
@@ -44,6 +47,9 @@
             }
         },
         "ccxt_async_config": {
+            "options": {
+                "fetchMarkets": ["spot"]
+            },
             "urls": {
                 "api": {
                     "public": "https://data-api.binance.vision/api/v3",
