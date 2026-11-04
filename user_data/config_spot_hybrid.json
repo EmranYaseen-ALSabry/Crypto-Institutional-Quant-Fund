@@ -35,8 +35,22 @@
         "name": "binance",
         "key": "",
         "secret": "",
-        "ccxt_config": {},
-        "ccxt_async_config": {},
+        "ccxt_config": {
+            "urls": {
+                "api": {
+                    "public": "https://data-api.binance.vision/api/v3",
+                    "private": "https://data-api.binance.vision/api/v3"
+                }
+            }
+        },
+        "ccxt_async_config": {
+            "urls": {
+                "api": {
+                    "public": "https://data-api.binance.vision/api/v3",
+                    "private": "https://data-api.binance.vision/api/v3"
+                }
+            }
+        },
         "pair_whitelist": [
             "BTC/USDT",
             "ETH/USDT",
