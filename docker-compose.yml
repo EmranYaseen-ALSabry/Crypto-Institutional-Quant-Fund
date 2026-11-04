@@ -1,0 +1,43 @@
+---
+services:
+  # ============================================================================
+  # 1. Spot Engine (تداول فوري آمن - تراكم الأصول بدون رافعة)
+  # ============================================================================
+  freqtrade-spot:
+    image: freqtradeorg/freqtrade:stable_freqai
+    container_name: freqtrade_spot_engine
+    restart: unless-stopped
+    volumes:
+      - ./user_data:/freqtrade/user_data
+    ports:
+      - "8080:8080" # FreqUI Spot Dashboard
+    environment:
+      - PUID=1000
+      - PGID=1000
+    command: >
+      trade
+      --config /freqtrade/user_data/config_spot.json
+      --strategy InstitutionalDualStrategy
+      --freqaimodel LightGBMRegressor
+      --db-url sqlite:////freqtrade/user_data/trades_spot.sqlite
+
+  # ============================================================================
+  # 2. Futures Engine (تداول عقود آجلة - صعود وهبوط Long/Short مع تحوط)
+  # ============================================================================
+  freqtrade-futures:
+    image: freqtradeorg/freqtrade:stable_freqai
+    container_name: freqtrade_futures_engine
+    restart: unless-stopped
+    volumes:
+      - ./user_data:/freqtrade/user_data
+    ports:
+      - "8081:8081" # FreqUI Futures Dashboard
+    environment:
+      - PUID=1000
+      - PGID=1000
+    command: >
+      trade
+      --config /freqtrade/user_data/config_futures.json
+      --strategy InstitutionalDualStrategy
+      --freqaimodel LightGBMRegressor
+      --db-url sqlite:////freqtrade/user_data/trades_futures.sqlite

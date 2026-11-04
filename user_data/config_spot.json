@@ -1,0 +1,153 @@
+{
+    "max_open_trades": 5,
+    "stake_currency": "USDT",
+    "stake_amount": "unlimited",
+    "tradable_balance_ratio": 0.95,
+    "fiat_display_currency": "USD",
+    "timeframe": "1h",
+    "dry_run": true,
+    "dry_run_wallet": 10000,
+    "cancel_open_orders_on_exit": false,
+    "trading_mode": "spot",
+    "margin_mode": "",
+    "unfilledtimeout": {
+        "entry": 10,
+        "exit": 10,
+        "exit_timeout_count": 0,
+        "unit": "minutes"
+    },
+    "entry_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1,
+        "price_last_balance": 0,
+        "check_depth_of_market": {
+            "enabled": false,
+            "bids_to_ask_delta": 1
+        }
+    },
+    "exit_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "exchange": {
+        "name": "binance",
+        "key": "",
+        "secret": "",
+        "ccxt_config": {},
+        "ccxt_async_config": {},
+        "pair_whitelist": [
+            "BTC/USDT",
+            "ETH/USDT",
+            "SOL/USDT",
+            "BNB/USDT",
+            "NEAR/USDT",
+            "XRP/USDT",
+            "DOGE/USDT",
+            "AVAX/USDT",
+            "SUI/USDT",
+            "LINK/USDT",
+            "ZEC/USDT",
+            "WLD/USDT",
+            "TRX/USDT",
+            "BEAMX/USDT"
+        ],
+        "pair_blacklist": [
+            "(.*)/BNB",
+            "(.*)/BUSD",
+            "(.*)/EUR",
+            "(.*)/GBP",
+            "(.*)/FDUSD",
+            "(.*)/TUSD",
+            "(.*)/USDC",
+            "(.*)/USD1",
+            "(.*)/USDE",
+            "(.*)/USDD",
+            "(USDC|BUSD|FDUSD|TUSD|DAI|EUR|GBP|USD1|USDE|USDD|PYUSD)/.*",
+            "(BTC|ETH|BNB|SOL)(UP|DOWN)/.*"
+        ]
+    },
+    "pairlists": [
+        {
+            "method": "StaticPairList"
+        }
+    ],
+    "telegram": {
+        "enabled": true,
+        "token": "9068586236:AAEyz8ZgzuHscffMvl45MgKk6qHtFNuRF0c",
+        "chat_id": "723772515",
+        "notification_settings": {
+            "status": "on",
+            "warning": "on",
+            "startup": "on",
+            "entry": "on",
+            "entry_cancel": "on",
+            "entry_fill": "on",
+            "exit": "on",
+            "exit_cancel": "on",
+            "exit_fill": "on",
+            "protection_trigger": "on",
+            "protection_trigger_global": "on"
+        }
+    },
+    "api_server": {
+        "enabled": true,
+        "listen_ip_address": "0.0.0.0",
+        "listen_port": 8080,
+        "verbosity": "error",
+        "enable_openapi": false,
+        "jwt_secret_key": "SECURE_SPOT_SECRET_KEY_CHANGE_IN_PRODUCTION",
+        "CORS_origins": [],
+        "username": "fund_admin",
+        "password": "InstitutionalQuant2026!"
+    },
+    "bot_name": "QuantFund_Spot_Engine",
+    "initial_state": "running",
+    "force_entry_enable": true,
+    "internals": {
+        "process_throttle_secs": 5
+    },
+    "freqai": {
+        "enabled": true,
+        "purge_old_models": 2,
+        "train_period_days": 90,
+        "backtest_period_days": 7,
+        "live_retrain_hours": 12,
+        "expiration_hours": 0,
+        "identifier": "spot_quant_model",
+        "feature_parameters": {
+            "include_corr_pairlist": [
+                "BTC/USDT",
+                "ETH/USDT"
+            ],
+            "include_timeframes": [
+                "1h",
+                "4h"
+            ],
+            "label_period_candles": 12,
+            "include_shifted_candles": 2,
+            "DI_threshold": 1.2,
+            "weight_factor": 0.9,
+            "principal_component_analysis": false,
+            "use_SVM_to_remove_outliers": false,
+            "indicator_periods_candles": [
+                10,
+                20,
+                50
+            ],
+            "plot_feature_importances": 15
+        },
+        "data_split_parameters": {
+            "test_size": 0.25,
+            "random_state": 42
+        },
+        "data_kitchen_thread_count": 2,
+        "model_training_parameters": {
+            "n_estimators": 500,
+            "learning_rate": 0.04,
+            "max_depth": 6,
+            "random_state": 42
+        }
+    }
+}

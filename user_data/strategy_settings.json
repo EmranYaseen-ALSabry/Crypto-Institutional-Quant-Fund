@@ -1,0 +1,102 @@
+{
+    "ai_model": {
+        "entry_threshold_long": 0.005,
+        "entry_threshold_short": 0.005,
+        "exit_threshold_long": -0.008,
+        "exit_threshold_short": 0.008,
+        "atr_multiplier": 2
+    },
+    "risk_management": {
+        "stoploss": -0.05,
+        "minimal_roi": {
+            "0": 0.06,
+            "60": 0.04,
+            "180": 0.025,
+            "360": 0.015
+        },
+        "trailing_stop": false,
+        "use_custom_stoploss": true,
+        "spot": {
+            "stoploss": -0.05,
+            "break_even": {
+                "enabled": true,
+                "trigger_profit": 0.01,
+                "offset": 0.002
+            },
+            "partial_take_profit": {
+                "enabled": true,
+                "stage1_profit": 0.015,
+                "stage1_sell_ratio": 0.3,
+                "stage2_profit": 0.03,
+                "stage2_sell_ratio": 0.35,
+                "runner_sell_ratio": 0.35,
+                "runner_trailing_stop": 0.015
+            }
+        },
+        "futures": {
+            "stoploss": -0.04,
+            "break_even": {
+                "enabled": true,
+                "trigger_profit": 0.01,
+                "offset": 0.002
+            },
+            "partial_take_profit": {
+                "enabled": true,
+                "stage1_profit": 0.015,
+                "stage1_sell_ratio": 0.3,
+                "stage2_profit": 0.03,
+                "stage2_sell_ratio": 0.35,
+                "runner_sell_ratio": 0.35,
+                "runner_trailing_stop": 0.012
+            }
+        },
+        "minimal_roi_enabled": true,
+        "ptp_enabled": true
+    },
+    "indicators": {
+        "adx": {
+            "enabled": true,
+            "timeperiod": 14,
+            "min_adx": 22,
+            "require_di_confirmation": true,
+            "adx_exhaustion_exit": true,
+            "exhaustion_threshold": 48
+        },
+        "rsi": {
+            "enabled": true,
+            "timeperiod": 14,
+            "long_rsi_min": 35,
+            "long_rsi_max": 78,
+            "short_rsi_min": 22,
+            "short_rsi_max": 65
+        },
+        "ema_filter": {
+            "enabled": true,
+            "macro_period": 200
+        },
+        "volume_filter": {
+            "enabled": true,
+            "min_volume_ratio": 0.8
+        },
+        "sr_channels": {
+            "enabled": true,
+            "pivot_period": 10,
+            "channel_width_pct": 0.025,
+            "min_strength": 2,
+            "use_for_entry": true,
+            "use_for_exit": true,
+            "use_for_stoploss": true
+        },
+        "mfi": {
+            "enabled": true,
+            "timeperiod": 14,
+            "long_mfi_min": 45,
+            "long_mfi_max": 80,
+            "short_mfi_min": 20,
+            "short_mfi_max": 55,
+            "exhaustion_exit": true,
+            "exhaustion_threshold": 85,
+            "use_in_ml_features": true
+        }
+    }
+}

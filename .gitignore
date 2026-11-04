@@ -1,0 +1,37 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary backups and editor files
+*.bak
+*.bak_*
+user_data/backups/
+*.swp
+*.swo
+
+# Python virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Databases & runtime SQLite files
+user_data/*.sqlite*
+user_data/trades_*.sqlite
+
+# Freqtrade runtime logs & results
+user_data/logs/
+user_data/backtest_results/
+user_data/plot/
+user_data/hyperopt_results/
+
+# FreqAI large binary models (Walk-forward rolling slices)
+user_data/models/*
+!user_data/models/.gitkeep
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
