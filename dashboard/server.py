@@ -2585,7 +2585,7 @@ def audit_pair_opportunity(pair: str, engine: str = 'spot', side: str = 'long') 
 
     if side == 'long':
 
-        if rsi >= 72.0:
+        if rsi >= 75.0:
 
             checks.append({
 
@@ -2599,11 +2599,29 @@ def audit_pair_opportunity(pair: str, engine: str = 'spot', side: str = 'long') 
 
                 'value': f'RSI: {rsi}',
 
-                'detail': f'مؤشر RSI وصل لمستوى تشبع شرائي حرج ({rsi} >= 72.0)، مما يرفع احتمالية التصحيح الهابط السريع.'
+                'detail': f'مؤشر RSI وصل لمستوى تشبع شرائي حرج ({rsi} >= 75.0)، مما يرفع احتمالية التصحيح الهابط السريع.'
 
             })
 
-        elif 35.0 <= rsi <= 68.0:
+        elif 68.0 < rsi < 75.0:
+
+            checks.append({
+
+                'id': 'rsi_zone',
+
+                'name': 'مؤشر القوة النسبية (RSI 14)',
+
+                'status': 'warning',
+
+                'badge': 'زخم صاعد قوي (يقترب من القمة)',
+
+                'value': f'RSI: {rsi}',
+
+                'detail': f'مؤشر RSI عند {rsi} يعكس زخماً صاعداً قوياً، ولكنه يقترب من مناطق التشبع الشرائي.'
+
+            })
+
+        elif 38.0 <= rsi <= 68.0:
 
             checks.append({
 
