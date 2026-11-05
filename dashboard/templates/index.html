@@ -3216,13 +3216,23 @@
 
 
 
-                        <!-- Revitalize & Auto-Enter Best Opportunity Button -->
+                                                <!-- Revitalize & Auto-Enter Best Opportunity Button -->
 
                         <button onclick="triggerRevitalizeAndEnter()" id="btn-revitalize-enter" class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 shadow-lg shadow-amber-500/25 active:scale-95 group" title="إنعاش المحركات، فحص السوق، واقتناص أفضل فرصة والدخول فيها فورياً">
 
                             <i data-lucide="zap" id="revitalize-icon" class="w-4 h-4 fill-current group-hover:scale-125 transition-transform"></i>
 
                             <span>إنعاش النظام واقتناص الفرص</span>
+
+                        </button>
+
+                        <!-- Continuous Auto-Sniper Engine Toggle Button (القناص الآلي المستمر) -->
+
+                        <button type="button" onclick="toggleContinuousAutoSniper()" id="btn-auto-sniper-toggle" class="flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs transition border border-slate-700 bg-slate-900/90 text-slate-300 hover:border-cyan-500 hover:text-white shadow active:scale-95 group" title="تشغيل / إيقاف وضع القناص الآلي المستمر (فحص واقتناص الصفقات تلقائياً دورياً)">
+
+                            <span id="auto-sniper-dot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+
+                            <span id="auto-sniper-text">القناص الآلي: متوقف ⏸️</span>
 
                         </button>
 
@@ -4792,6 +4802,67 @@
 
 
 
+            
+            <!-- Best Action Recommendation Banner -->
+            <div id="audit-best-action-banner" class="p-3 rounded-xl border border-cyan-800/80 bg-cyan-950/40 flex items-center justify-between gap-3 text-xs shadow-md">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-cyan-400 shrink-0"></i>
+                    <span id="audit-best-action-text" class="font-bold text-cyan-200">جاري احتساب التوصية المؤسسية المثلى...</span>
+                </div>
+            </div>
+
+            <!-- Multi-Engine Suitability Matrix (مصفوفة جاهزية الأسواق: فوري شراء | عقود شراء | عقود بيع) -->
+            <div>
+                <h4 class="text-xs font-bold text-slate-300 mb-2 flex items-center justify-between">
+                    <span class="flex items-center gap-1.5">
+                        <i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i>
+                        <span>مصفوفة الملاءمة والجاهزية الشاملة (Spot مقابل Futures):</span>
+                    </span>
+                    <span class="text-[10px] text-slate-400 font-normal">اضغط على أي خيار لعرض خطته بالأسفل</span>
+                </h4>
+                <div id="audit-suitability-matrix" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <!-- Spot Long Card -->
+                    <div id="suit-card-spot-long" onclick="selectSuitabilityOption('spot', 'long')" class="p-3 rounded-xl border border-slate-800 bg-slate-900/90 hover:border-emerald-500/80 cursor-pointer flex flex-col gap-1.5 transition">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Spot (فوري)
+                            </span>
+                            <span id="suit-score-spot-long" class="text-xs font-mono font-bold text-emerald-400">--%</span>
+                        </div>
+                        <div class="text-[11px] text-slate-300 font-bold">شراء LONG 📈</div>
+                        <div id="suit-badge-spot-long" class="text-[10px] px-2 py-0.5 rounded font-bold w-fit bg-slate-800 text-slate-300">جاري الفحص...</div>
+                        <p id="suit-reason-spot-long" class="text-[10px] text-slate-400 leading-tight mt-0.5">...</p>
+                    </div>
+
+                    <!-- Futures Long Card -->
+                    <div id="suit-card-futures-long" onclick="selectSuitabilityOption('futures', 'long')" class="p-3 rounded-xl border border-slate-800 bg-slate-900/90 hover:border-cyan-500/80 cursor-pointer flex flex-col gap-1.5 transition">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-cyan-400"></span> Futures (عقود)
+                            </span>
+                            <span id="suit-score-futures-long" class="text-xs font-mono font-bold text-cyan-400">--%</span>
+                        </div>
+                        <div class="text-[11px] text-slate-300 font-bold">شراء LONG 📈</div>
+                        <div id="suit-badge-futures-long" class="text-[10px] px-2 py-0.5 rounded font-bold w-fit bg-slate-800 text-slate-300">جاري الفحص...</div>
+                        <p id="suit-reason-futures-long" class="text-[10px] text-slate-400 leading-tight mt-0.5">...</p>
+                    </div>
+
+                    <!-- Futures Short Card -->
+                    <div id="suit-card-futures-short" onclick="selectSuitabilityOption('futures', 'short')" class="p-3 rounded-xl border border-slate-800 bg-slate-900/90 hover:border-rose-500/80 cursor-pointer flex flex-col gap-1.5 transition">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-rose-400"></span> Futures (عقود)
+                            </span>
+                            <span id="suit-score-futures-short" class="text-xs font-mono font-bold text-rose-400">--%</span>
+                        </div>
+                        <div class="text-[11px] text-slate-300 font-bold">بيع SHORT 📉</div>
+                        <div id="suit-badge-futures-short" class="text-[10px] px-2 py-0.5 rounded font-bold w-fit bg-slate-800 text-slate-300">جاري الفحص...</div>
+                        <p id="suit-reason-futures-short" class="text-[10px] text-slate-400 leading-tight mt-0.5">...</p>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- Live Indicators Audit Breakdown Grid -->
 
             <div>
@@ -6043,6 +6114,90 @@ function toggleAdxControls() {
 
 
             scoreVal.textContent = `${data.audit_score}%`;
+
+            // Populate Multi-Engine Suitability Matrix Cards
+            if (data.best_market_action) {
+                const actEl = document.getElementById('audit-best-action-text');
+                if (actEl) actEl.textContent = data.best_market_action;
+            }
+
+            if (data.suitability_matrix) {
+                const m = data.suitability_matrix;
+                // 1. Spot Long
+                if (m.spot_long) {
+                    const scEl = document.getElementById('suit-score-spot-long');
+                    const bdEl = document.getElementById('suit-badge-spot-long');
+                    const reEl = document.getElementById('suit-reason-spot-long');
+                    const cdEl = document.getElementById('suit-card-spot-long');
+                    if (scEl) scEl.textContent = `${m.spot_long.score}%`;
+                    if (bdEl) {
+                        bdEl.textContent = m.spot_long.verdict;
+                        bdEl.className = (m.spot_long.badge === 'success') 
+                            ? 'text-[10px] px-2 py-0.5 rounded font-bold w-fit bg-emerald-950 text-emerald-300 border border-emerald-800'
+                            : ((m.spot_long.badge === 'warning') 
+                                ? 'text-[10px] px-2 py-0.5 rounded font-bold w-fit bg-amber-950 text-amber-300 border border-amber-800'
+                                : 'text-[10px] px-2 py-0.5 rounded font-bold w-fit bg-rose-950 text-rose-300 border border-rose-800');
+                    }
+                    if (reEl) reEl.textContent = m.spot_long.reason;
+                    if (cdEl) {
+                        if (data.engine === 'spot' && data.side === 'long') {
+                            cdEl.classList.add('ring-2', 'ring-emerald-500', 'bg-slate-900');
+                        } else {
+                            cdEl.classList.remove('ring-2', 'ring-emerald-500');
+                        }
+                    }
+                }
+
+                // 2. Futures Long
+                if (m.futures_long) {
+                    const scEl = document.getElementById('suit-score-futures-long');
+                    const bdEl = document.getElementById('suit-badge-futures-long');
+                    const reEl = document.getElementById('suit-reason-futures-long');
+                    const cdEl = document.getElementById('suit-card-futures-long');
+                    if (scEl) scEl.textContent = `${m.futures_long.score}%`;
+                    if (bdEl) {
+                        bdEl.textContent = m.futures_long.verdict;
+                        bdEl.className = (m.futures_long.badge === 'success') 
+                            ? 'text-[10px] px-2 py-0.5 rounded font-bold w-fit bg-cyan-950 text-cyan-300 border border-cyan-800'
+                            : ((m.futures_long.badge === 'warning') 
+                                ? 'text-[10px] px-2 py-0.5 rounded font-bold w-fit bg-amber-950 text-amber-300 border border-amber-800'
+                                : 'text-[10px] px-2 py-0.5 rounded font-bold w-fit bg-rose-950 text-rose-300 border border-rose-800');
+                    }
+                    if (reEl) reEl.textContent = m.futures_long.reason;
+                    if (cdEl) {
+                        if (data.engine === 'futures' && data.side === 'long') {
+                            cdEl.classList.add('ring-2', 'ring-cyan-500', 'bg-slate-900');
+                        } else {
+                            cdEl.classList.remove('ring-2', 'ring-cyan-500');
+                        }
+                    }
+                }
+
+                // 3. Futures Short
+                if (m.futures_short) {
+                    const scEl = document.getElementById('suit-score-futures-short');
+                    const bdEl = document.getElementById('suit-badge-futures-short');
+                    const reEl = document.getElementById('suit-reason-futures-short');
+                    const cdEl = document.getElementById('suit-card-futures-short');
+                    if (scEl) scEl.textContent = `${m.futures_short.score}%`;
+                    if (bdEl) {
+                        bdEl.textContent = m.futures_short.verdict;
+                        bdEl.className = (m.futures_short.badge === 'success') 
+                            ? 'text-[10px] px-2 py-0.5 rounded font-bold w-fit bg-rose-950 text-rose-300 border border-rose-800'
+                            : ((m.futures_short.badge === 'warning') 
+                                ? 'text-[10px] px-2 py-0.5 rounded font-bold w-fit bg-amber-950 text-amber-300 border border-amber-800'
+                                : 'text-[10px] px-2 py-0.5 rounded font-bold w-fit bg-rose-950 text-rose-300 border border-rose-800');
+                    }
+                    if (reEl) reEl.textContent = m.futures_short.reason;
+                    if (cdEl) {
+                        if (data.engine === 'futures' && data.side === 'short') {
+                            cdEl.classList.add('ring-2', 'ring-rose-500', 'bg-slate-900');
+                        } else {
+                            cdEl.classList.remove('ring-2', 'ring-rose-500');
+                        }
+                    }
+                }
+            }
 
             priceTag.textContent = `$${data.cur_price_str} (${data.change_24h >= 0 ? '+' : ''}${data.change_24h}%)`;
 
@@ -8266,7 +8421,7 @@ function toggleAdxControls() {
 
                         <!-- Quick Snipe Direct Entry Button -->
 
-                        <button onclick="directEnterPair('${item.base}', 'spot')" title="اقتناص ودخول فوري في هذه العملة" class="px-2 py-1 rounded-lg bg-amber-500/90 hover:bg-amber-400 text-slate-950 font-bold text-[10px] flex items-center gap-0.5 transition shadow">
+                        <button onclick="directEnterPair('${item.base}', '${item.recommended_engine || 'spot'}', '${item.recommended_side || 'long'}')" title="اقتناص ودخول فوري في هذه العملة" class="px-2 py-1 rounded-lg bg-amber-500/90 hover:bg-amber-400 text-slate-950 font-bold text-[10px] flex items-center gap-0.5 transition shadow">
 
                             <i data-lucide="zap" class="w-3 h-3 fill-current"></i>
 
@@ -8402,7 +8557,7 @@ function toggleAdxControls() {
 
                                     <span class="font-bold ${scoreText}">${item.score}%</span>
 
-                                    <span class="text-[10px] font-sans text-slate-400">${item.signal}</span>
+                                    <div class="flex items-center gap-1"><span class="text-[10px] font-sans text-slate-400">${item.signal}</span>${item.engine_badge ? `<span class="px-1 py-0.5 rounded text-[9px] font-bold ${item.recommended_side === "short" ? "bg-rose-950 text-rose-300 border border-rose-800" : "bg-emerald-950 text-emerald-300 border border-emerald-800"}">${item.engine_badge}</span>` : ""}</div>
 
                                 </div>
 
@@ -8530,9 +8685,9 @@ function toggleAdxControls() {
 
         // Direct Force-Entry on Any Specific Pair (دخول فوري في عملة محددة)
 
-        async function directEnterPair(base, engine) {
+        async function directEnterPair(base, engine, side = 'long') {
 
-            openPreflightAuditModal(base, engine, 'long');
+            openPreflightAuditModal(base, engine, side);
 
             return;
 
@@ -8766,7 +8921,73 @@ function toggleAdxControls() {
 
         });
 
-    </script>
+    
+        // Multi-Engine Suitability Matrix & Dynamic Re-Audit
+        async function selectSuitabilityOption(engine, side) {
+            if (!currentAuditedTrade) return;
+            await reAuditCurrentTrade(engine, side);
+        }
+
+        async function reAuditCurrentTrade(engine, side) {
+            if (!currentAuditedTrade || !currentAuditedTrade.symbol) return;
+            const clean = currentAuditedTrade.symbol;
+            showToast(`جاري تحديث الفحص لـ ${clean} (${engine.toUpperCase()} - ${side.toUpperCase()})...`, 'info');
+            try {
+                const res = await fetch(`/api/market/preflight_audit/${clean}?engine=${engine}&side=${side}`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    renderAuditModalContent(data);
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                } else {
+                    showToast(`فشل تحديث الفحص: ${data.message || 'بيانات غير متوفرة'}`, 'error');
+                }
+            } catch (err) {
+                showToast(`خطأ في تحديث الفحص: ${err.message}`, 'error');
+            }
+        }
+
+        // Toggle Continuous Auto-Sniper Engine
+        async function toggleContinuousAutoSniper() {
+            try {
+                showToast('جاري تبديل وضع القناص الآلي المستمر...', 'info');
+                const res = await fetch('/api/market/auto_sniper/toggle', {method: 'POST'});
+                const data = await res.json();
+                updateAutoSniperUI(data.enabled);
+                showToast(data.message, data.enabled ? 'success' : 'info');
+            } catch (err) {
+                showToast(`خطأ في تبديل القناص الآلي: ${err.message}`, 'error');
+            }
+        }
+
+        function updateAutoSniperUI(enabled) {
+            const btn = document.getElementById('btn-auto-sniper-toggle');
+            const dot = document.getElementById('auto-sniper-dot');
+            const text = document.getElementById('auto-sniper-text');
+            if (!btn || !dot || !text) return;
+            if (enabled) {
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping';
+                text.innerText = 'القناص الآلي: نشط (تلقائي مستمر) ⚡';
+                btn.className = 'flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs transition bg-emerald-950/70 border border-emerald-500 text-emerald-300 shadow-lg shadow-emerald-950/40';
+            } else {
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-500';
+                text.innerText = 'القناص الآلي: متوقف ⏸️';
+                btn.className = 'flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs transition border border-slate-700 bg-slate-900/90 text-slate-300 hover:border-cyan-500 hover:text-white shadow';
+            }
+        }
+
+        async function fetchAutoSniperStatus() {
+            try {
+                const res = await fetch('/api/market/auto_sniper/status');
+                if (res.ok) {
+                    const data = await res.json();
+                    updateAutoSniperUI(data.enabled);
+                }
+            } catch (e) {
+                // Ignore silent poll error
+            }
+        }
+
+</script>
 
 </body>
 

@@ -1389,88 +1389,98 @@ def compute_market_indicators(klines: list) -> Optional[dict]:
 
 
 def score_opportunity(item: dict) -> tuple:
+    rsi = float(item.get('rsi', 50))
+    adx = float(item.get('adx', 20))
+    p_di = float(item.get('plus_di', 20))
+    m_di = float(item.get('minus_di', 20))
+    dist_sup = float(item.get('dist_sup_pct', 5.0))
+    dist_res = float(item.get('dist_res_pct', 5.0))
+    vol_m = float(item.get('volume_m', 0))
+    chg = float(item.get('change_24h', 0))
 
-    rsi = item.get('rsi', 50)
+    # Base baseline scores
+    long_score = 40.0
+    short_score = 40.0
 
-    adx = item.get('adx', 20)
-
-    p_di = item.get('plus_di', 20)
-
-    m_di = item.get('minus_di', 20)
-
-    dist_sup = item.get('dist_sup_pct', 5.0)
-
-    dist_res = item.get('dist_res_pct', 5.0)
-
-    vol_m = item.get('volume_m', 0)
-
-    chg = item.get('change_24h', 0)
-
-
-
-    score = 42.0
-
-    signal = 'تجميع واستقرار'
-
-    color = 'slate'
-
-
-
-    # Support bounce check
-
-    if dist_sup <= 2.2 and rsi <= 50:
-
-        score += 30.0 + max(0.0, (2.2 - dist_sup) * 5)
-
-        signal = 'ارتداد دعم واعد'
-
-        color = 'emerald'
-
-    elif p_di > m_di and adx >= 24 and chg > 0:
-
-        score += 26.0 + min(18.0, (adx - 20) * 1.5)
-
-        signal = 'زخم صاعد قوي'
-
-        color = 'cyan'
-
-    elif rsi < 32:
-
-        score += 28.0 + max(0.0, (32 - rsi) * 1.5)
-
-        signal = 'تشبع بيعي ارتدادي'
-
-        color = 'amber'
-
-    elif dist_res <= 1.5 and p_di > m_di:
-
-        score += 15.0
-
-        signal = 'اختبار مقاومة'
-
-        color = 'purple'
-
-
-
+    vol_boost = 0.0
     if vol_m > 100:
-
-        score += 10.0
-
+        vol_boost = 10.0
     elif vol_m > 50:
+        vol_boost = 5.0
 
-        score += 5.0
-
-
-
+    # 1. Long Opportunity Scoring (Spot / Futures Long)
     if p_di > m_di:
+        long_score += 6.0
+    if dist_sup <= 2.2 and rsi <= 52:
+        long_score += 30.0 + max(0.0, (2.2 - dist_sup) * 5)
+        long_sig = 'ارتداد دعم واعد (شراء Spot/Long)'
+        long_col = 'emerald'
+    elif p_di > m_di and adx >= 24 and chg > 0:
+        long_score += 26.0 + min(18.0, (adx - 20) * 1.5)
+        long_sig = 'زخم صاعد قوي (شراء Spot/Long)'
+        long_col = 'cyan'
+    elif rsi < 32:
+        long_score += 28.0 + max(0.0, (32 - rsi) * 1.5)
+        long_sig = 'تشبع بيعي ارتدادي (شراء Spot/Long)'
+        long_col = 'amber'
+    elif dist_res <= 1.5 and p_di > m_di:
+        long_score += 15.0
+        long_sig = 'اختبار مقاومة (Long)'
+        long_col = 'purple'
+    else:
+        long_sig = 'تجميع واستقرار'
+        long_col = 'slate'
+    long_score += vol_boost
 
-        score += 4.0
+    # 2. Short Opportunity Scoring (Futures Short Only)
+    if m_di > p_di:
+        short_score += 6.0
+    if m_di > p_di and adx >= 24 and chg < 0:
+        short_score += 28.0 + min(18.0, (adx - 20) * 1.5)
+        short_sig = 'زخم هابط قوي (بيع Futures/Short)'
+        short_col = 'rose'
+    elif dist_res <= 2.2 and rsi >= 48 and m_di > p_di:
+        short_score += 30.0 + max(0.0, (2.2 - dist_res) * 5)
+        short_sig = 'ارتداد بيعي من المقاومة (Futures/Short)'
+        short_col = 'rose'
+    elif rsi > 70 and m_di > p_di:
+        short_score += 28.0 + max(0.0, (rsi - 70) * 1.5)
+        short_sig = 'تشبع شرائي تصريفي (Futures/Short)'
+        short_col = 'amber'
+    elif dist_sup <= 1.8 and m_di > p_di and adx >= 22:
+        short_score += 22.0
+        short_sig = 'كسر دعم هابط (Futures/Short)'
+        short_col = 'rose'
+    else:
+        short_sig = 'تذبذب هابط ضعيف'
+        short_col = 'slate'
+    short_score += vol_boost
 
+    # Determine recommended side & engine
+    if short_score > long_score and m_di > p_di and adx >= 20:
+        final_score = int(min(98, max(20, round(short_score))))
+        signal = short_sig
+        color = short_col
+        rec_side = 'short'
+        rec_engine = 'futures'
+        engine_badge = 'Futures: بيع 📉'
+    else:
+        final_score = int(min(98, max(20, round(long_score))))
+        signal = long_sig
+        color = long_col
+        rec_side = 'long'
+        rec_engine = 'spot'
+        engine_badge = 'Spot: شراء 📈'
 
-
-    final_score = int(min(98, max(20, round(score))))
+    item['recommended_side'] = rec_side
+    item['recommended_engine'] = rec_engine
+    item['engine_badge'] = engine_badge
+    item['long_score'] = int(min(98, max(20, round(long_score))))
+    item['short_score'] = int(min(98, max(20, round(short_score))))
 
     return final_score, signal, color
+
+
 
 
 
@@ -2871,11 +2881,116 @@ def audit_pair_opportunity(pair: str, engine: str = 'spot', side: str = 'long') 
 
     rr_ratio = round(tp1_pct / max(0.5, sl_pct), 2)
 
+    # Multi-Engine Suitability Matrix Calculations
+    # 1. Spot Long
+    if p_di <= m_di:
+        spot_long_score = int(max(15, 45 - (m_di - p_di) * 1.5))
+        spot_long_badge = 'danger'
+        spot_long_verdict = 'غير مواتية / ضغط بيعي غالب 🛑'
+        spot_long_reason = f'قوى البيع (-DI: {m_di}) تسيطر على السوق مقابل (+DI: {p_di})، مخاطرة تراجع في السوق الفوري.'
+    elif rsi >= 75.0 or adx >= 48.0:
+        spot_long_score = 38
+        spot_long_badge = 'warning'
+        spot_long_verdict = 'مخاطرة قمة أو إنهاك اتجاهي ⚠️'
+        spot_long_reason = f'السوق في مناطق قمة أو إنهاك اتجاهي (RSI: {rsi} | ADX: {adx})، يفضل انتظار التصحيح.'
+    elif dist_sup_pct > 6.0:
+        spot_long_score = 48
+        spot_long_badge = 'warning'
+        spot_long_verdict = 'تضخم سعري بعيد عن الدعم ⚠️'
+        spot_long_reason = f'السعر يبعد (+{dist_sup_pct}%) عن أرضية الدعم المؤسسي، مخاطرة الشراء مرتفعة.'
+    else:
+        spot_long_score = int(min(96, max(75, 78 + (2.5 - dist_sup_pct) * 4)))
+        spot_long_badge = 'success'
+        spot_long_verdict = 'موصى به للشراء الفوري (Spot Long) ✅'
+        spot_long_reason = f'شروط حماية رأس المال مستوفاة: ارتداد دعم آمن (+{dist_sup_pct}%) وزخم صاعد متزن.'
 
+    # 2. Futures Long
+    if p_di <= m_di:
+        fut_long_score = int(max(10, 40 - (m_di - p_di) * 2.0))
+        fut_long_badge = 'danger'
+        fut_long_verdict = 'مرفوضة للشراء / اتجاه هابط ❌'
+        fut_long_reason = f'سيطرة قوى البيع تعرّض صفقات الشراء الآجل لخطر التصفية أو ضرب الوقف السريع.'
+    elif adx < adx_min:
+        fut_long_score = 42
+        fut_long_badge = 'warning'
+        fut_long_verdict = 'زخم اتجاهي ضعيف ⚠️'
+        fut_long_reason = f'مؤشر ADX عند {adx} يعكس حركة أفقية وتذبذباً ضعيفاً غير ملائم للشراء برافعة.'
+    else:
+        fut_long_score = int(min(95, max(72, 75 + min(15.0, (adx - 20) * 1.5))))
+        fut_long_badge = 'success'
+        fut_long_verdict = 'مؤهل للشراء الآجل (Futures Long) 📈'
+        fut_long_reason = f'قوى الشراء (+DI: {p_di}) متفوقة والزخم الاتجاهي قوي (ADX: {adx}) مع رافعة 2.0x.'
+
+    # 3. Futures Short
+    if p_di > m_di:
+        fut_short_score = int(max(10, 40 - (p_di - m_di) * 2.0))
+        fut_short_badge = 'danger'
+        fut_short_verdict = 'مرفوضة للبيع / اتجاه صاعد ❌'
+        fut_short_reason = f'قوى الشراء (+DI: {p_di}) متفوقة على البيع، فتح صفقات بيع معاكس للاتجاه مخاطرة عالية.'
+    elif rsi <= 22.0:
+        fut_short_score = 32
+        fut_short_badge = 'warning'
+        fut_short_verdict = 'تشبع بيعي في القاع (خطر ارتداد) ⚠️'
+        fut_short_reason = f'مؤشر RSI عند {rsi} وصل لتشبع بيعي حاد يهدد بارتداد صعودي سريع ضد البيع.'
+    elif adx < adx_min:
+        fut_short_score = 45
+        fut_short_badge = 'warning'
+        fut_short_verdict = 'زخم بيعي غير كافٍ ⚠️'
+        fut_short_reason = f'قوة الاتجاه ADX ({adx}) أقل من عتبة الزخم المطلوبة (22).'
+    else:
+        fut_short_score = int(min(96, max(75, 78 + min(15.0, (adx - 20) * 1.5) + max(0.0, dist_sup_pct * 1.5))))
+        fut_short_badge = 'success'
+        fut_short_verdict = 'موصى به للبيع على المكشوف (Futures Short) 📉'
+        fut_short_reason = f'قوى البيع (-DI: {m_di}) تسيطر وزخم الهبوط نشط (ADX: {adx}) مما يمنح أفضلية لصفقة Short.'
+
+    suitability_matrix = {
+        'spot_long': {
+            'engine': 'spot',
+            'side': 'long',
+            'label': 'Spot الفوري - شراء Long 📈',
+            'score': spot_long_score,
+            'verdict': spot_long_verdict,
+            'badge': spot_long_badge,
+            'reason': spot_long_reason
+        },
+        'futures_long': {
+            'engine': 'futures',
+            'side': 'long',
+            'label': 'Futures الآجل - شراء Long 📈',
+            'score': fut_long_score,
+            'verdict': fut_long_verdict,
+            'badge': fut_long_badge,
+            'reason': fut_long_reason
+        },
+        'futures_short': {
+            'engine': 'futures',
+            'side': 'short',
+            'label': 'Futures الآجل - بيع Short 📉',
+            'score': fut_short_score,
+            'verdict': fut_short_verdict,
+            'badge': fut_short_badge,
+            'reason': fut_short_reason
+        }
+    }
+
+    if fut_short_score >= 70 and fut_short_score > spot_long_score and fut_short_score > fut_long_score:
+        best_market_action = f'🎯 التوصية المؤسسية المثلى: دخول صفقة بيع SHORT في العقود الآجلة Futures (يقين {fut_short_score}%)'
+        best_action_badge = 'purple'
+    elif spot_long_score >= 70 and spot_long_score >= fut_long_score:
+        best_market_action = f'🎯 التوصية المؤسسية المثلى: دخول صفقة شراء LONG في السوق الفوري Spot (يقين {spot_long_score}%)'
+        best_action_badge = 'emerald'
+    elif fut_long_score >= 70:
+        best_market_action = f'🎯 التوصية المؤسسية المثلى: دخول صفقة شراء LONG في العقود الآجلة Futures (يقين {fut_long_score}%)'
+        best_action_badge = 'cyan'
+    else:
+        best_market_action = '🛑 التوصية المؤسسية المثلى: تفادي التداول في هذه العملة والاحتفاظ برأس المال كاش 100% USDT'
+        best_action_badge = 'amber'
 
     return {
-
         'status': 'success',
+        'suitability_matrix': suitability_matrix,
+        'best_market_action': best_market_action,
+        'best_action_badge': best_action_badge,
 
         'symbol': clean,
 
@@ -3074,18 +3189,17 @@ async def revitalize_and_enter(payload: Optional[dict] = None):
         entry_pair = pair_spot if target_engine == 'spot' else pair_fut
 
         api_url = SPOT_API_URL if target_engine == 'spot' else FUTURES_API_URL
+        # Determine side for futures & appropriate engine
+        cand_side = candidate.get('recommended_side')
+        if not cand_side:
+            cand_side = 'short' if (candidate.get('minus_di', 0) > candidate.get('plus_di', 0) and candidate.get('rsi', 50) <= 65) else 'long'
 
-
-
-        # Determine side for futures
-
-        target_side = 'long'
-
-        if target_engine == 'futures':
-
-            is_short = candidate.get('minus_di', 0) > candidate.get('plus_di', 0) and candidate.get('rsi', 50) > 55
-
-            target_side = 'short' if is_short else 'long'
+        target_side = cand_side if target_engine == 'futures' else 'long'
+        if cand_side == 'short' and preferred_engine in ['futures', 'both']:
+            target_engine = 'futures'
+            target_side = 'short'
+            entry_pair = pair_fut
+            api_url = FUTURES_API_URL
 
 
 
@@ -3166,10 +3280,7 @@ async def revitalize_and_enter(payload: Optional[dict] = None):
         body = {'pair': entry_pair}
 
         if target_engine == 'futures':
-
-            is_short = candidate.get('minus_di', 0) > candidate.get('plus_di', 0) and candidate.get('rsi', 50) > 55
-
-            body['side'] = 'short' if is_short else 'long'
+            body['side'] = target_side
 
 
 
@@ -3594,6 +3705,110 @@ async def trigger_download_data(payload: dict):
 # Main Entry Point
 
 # =============================================================================
+
+
+
+# =============================================================================
+# Continuous Auto-Pilot Sniper Engine (نظام القناص الآلي المستمر)
+# =============================================================================
+auto_sniper_state = {
+    "enabled": False,
+    "status": "stopped",       # "active" or "stopped"
+    "interval_seconds": 120,   # scans every 2 minutes or upon candle completion
+    "last_scan_time": None,
+    "last_sniped_pair": None,
+    "last_sniped_action": None,
+    "sniped_trades_count": 0,
+    "scans_count": 0,
+    "log_history": []
+}
+_auto_sniper_task = None
+
+async def auto_sniper_worker():
+    """
+    Continuous background loop that scans the market and snipes qualified opportunities.
+    """
+    logger.info("⚡ [Auto-Sniper] Continuous engine started.")
+    auto_sniper_state["status"] = "active"
+    auto_sniper_state["enabled"] = True
+    
+    while auto_sniper_state["enabled"]:
+        try:
+            auto_sniper_state["scans_count"] += 1
+            now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            auto_sniper_state["last_scan_time"] = now_str
+            
+            # Execute market revitalization & scan
+            res = await revitalize_and_enter(payload={"engine": "both", "min_score": 68.0, "auto_enter": True})
+            
+            if res.get("status") == "success" and res.get("entered"):
+                pair = res.get("pair")
+                side = res.get("side", "long")
+                eng = res.get("engine", "spot")
+                auto_sniper_state["sniped_trades_count"] += 1
+                auto_sniper_state["last_sniped_pair"] = pair
+                auto_sniper_state["last_sniped_action"] = f"{eng.upper()} {side.upper()} @ ${res.get('price')}"
+                log_msg = f"[{now_str}] 🎯 تم اقتناص صفقة {pair} ({eng.upper()} - {side.upper()}) بسعر ${res.get('price')} بنجاح!"
+                auto_sniper_state["log_history"].insert(0, log_msg)
+                logger.info(f"⚡ [Auto-Sniper] {log_msg}")
+            else:
+                msg = res.get("message", "فحص دوري: لا توجد فرص تتجاوز عتبة الأمان حالياً")
+                auto_sniper_state["log_history"].insert(0, f"[{now_str}] 🔍 {msg}")
+            
+            # Keep history trimmed
+            auto_sniper_state["log_history"] = auto_sniper_state["log_history"][:30]
+            
+        except Exception as e:
+            logger.error(f"Error in auto_sniper_worker: {e}")
+            auto_sniper_state["log_history"].insert(0, f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ خطأ أثناء الفحص: {e}")
+        
+        # Sleep interval (120 seconds, checking cancellation periodically)
+        for _ in range(24):  # 24 * 5s = 120s
+            if not auto_sniper_state["enabled"]:
+                break
+            await asyncio.sleep(5)
+            
+    auto_sniper_state["status"] = "stopped"
+    logger.info("⏸️ [Auto-Sniper] Continuous engine stopped.")
+
+@app.post("/api/market/auto_sniper/toggle")
+async def toggle_auto_sniper(payload: Optional[dict] = None):
+    global _auto_sniper_task
+    req = payload or {}
+    req_enable = req.get("enabled")
+    if req_enable is None:
+        new_state = not auto_sniper_state["enabled"]
+    else:
+        new_state = bool(req_enable)
+        
+    if new_state and not auto_sniper_state["enabled"]:
+        auto_sniper_state["enabled"] = True
+        _auto_sniper_task = asyncio.create_task(auto_sniper_worker())
+        msg = "تم تفعيل وضع القناص الآلي المستمر بنجاح! سيعمل النظام دورياً لاقتناص أي فرصة مستوفاة للشروط المؤسسية."
+    elif not new_state and auto_sniper_state["enabled"]:
+        auto_sniper_state["enabled"] = False
+        if _auto_sniper_task and not _auto_sniper_task.done():
+            _auto_sniper_task.cancel()
+        auto_sniper_state["status"] = "stopped"
+        msg = "تم إيقاف وضع القناص الآلي المستمر. النظام الآن في الوضع اليدوي."
+    else:
+        msg = f"القناص الآلي بالفعل {'نشط' if auto_sniper_state['enabled'] else 'متوقف'}."
+
+    return {
+        "status": "success",
+        "enabled": auto_sniper_state["enabled"],
+        "sniper_state": auto_sniper_state,
+        "message": msg
+    }
+
+@app.get("/api/market/auto_sniper/status")
+async def get_auto_sniper_status():
+    return {
+        "status": "success",
+        "enabled": auto_sniper_state["enabled"],
+        "sniper_state": auto_sniper_state
+    }
+
 
 if __name__ == "__main__":
 
