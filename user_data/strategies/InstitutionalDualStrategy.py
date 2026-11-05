@@ -1308,6 +1308,18 @@ class InstitutionalDualStrategy(IStrategy):
 
                 short_conditions.append(df['volume'] >= (df['vol_ma_live'] * min_vol_ratio))
 
+            # MFI Money Flow Liquidity Filter (Volume-Weighted Oversold Guard)
+
+            if mfi_cfg.get("enabled", True):
+
+                short_mfi_min = float(mfi_cfg.get("short_mfi_min", 25.0))
+
+                short_mfi_max = float(mfi_cfg.get("short_mfi_max", 55.0))
+
+                short_conditions.append(df['mfi_live'] >= short_mfi_min)
+
+                short_conditions.append(df['mfi_live'] <= short_mfi_max)
+
 
 
             if 'DI_values' in df.columns:

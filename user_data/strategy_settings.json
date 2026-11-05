@@ -67,7 +67,7 @@
             "timeperiod": 14,
             "long_rsi_min": 35,
             "long_rsi_max": 78,
-            "short_rsi_min": 22,
+            "short_rsi_min": 35.0,
             "short_rsi_max": 65
         },
         "ema_filter": {
@@ -92,7 +92,7 @@
             "timeperiod": 14,
             "long_mfi_min": 45,
             "long_mfi_max": 80,
-            "short_mfi_min": 20,
+            "short_mfi_min": 25.0,
             "short_mfi_max": 55,
             "exhaustion_exit": true,
             "exhaustion_threshold": 85,

@@ -1354,13 +1354,40 @@ def compute_market_indicators(klines: list) -> Optional[dict]:
 
         dist_res_pct = round(((nearest_res - cur_price) / cur_price) * 100, 2)
 
-
+        # MFI 14 (Volume-Weighted Momentum)
+        mfi_val = 50.0
+        try:
+            typical_prices = (highs + lows + closes) / 3.0
+            raw_money_flow = typical_prices * volumes
+            pos_flow, neg_flow = [], []
+            for idx in range(1, len(typical_prices)):
+                if typical_prices[idx] > typical_prices[idx-1]:
+                    pos_flow.append(raw_money_flow[idx])
+                    neg_flow.append(0.0)
+                elif typical_prices[idx] < typical_prices[idx-1]:
+                    pos_flow.append(0.0)
+                    neg_flow.append(raw_money_flow[idx])
+                else:
+                    pos_flow.append(0.0)
+                    neg_flow.append(0.0)
+            if len(pos_flow) >= 14:
+                pos_mf = sum(pos_flow[-14:])
+                neg_mf = sum(neg_flow[-14:])
+                if neg_mf > 0:
+                    mr = pos_mf / neg_mf
+                    mfi_val = round(float(100.0 - (100.0 / (1.0 + mr))), 1)
+                else:
+                    mfi_val = 100.0 if pos_mf > 0 else 50.0
+        except Exception:
+            mfi_val = 50.0
 
         return {
 
             'cur_price': cur_price,
 
             'rsi': round(float(rsi), 1),
+
+            'mfi': mfi_val,
 
             'adx': round(float(adx), 1),
 
@@ -1390,6 +1417,7 @@ def compute_market_indicators(klines: list) -> Optional[dict]:
 
 def score_opportunity(item: dict) -> tuple:
     rsi = float(item.get('rsi', 50))
+    mfi = float(item.get('mfi', 50))
     adx = float(item.get('adx', 20))
     p_di = float(item.get('plus_di', 20))
     m_di = float(item.get('minus_di', 20))
@@ -1419,9 +1447,9 @@ def score_opportunity(item: dict) -> tuple:
         long_score += 26.0 + min(18.0, (adx - 20) * 1.5)
         long_sig = 'زخم صاعد قوي (شراء Spot/Long)'
         long_col = 'cyan'
-    elif rsi < 32:
-        long_score += 28.0 + max(0.0, (32 - rsi) * 1.5)
-        long_sig = 'تشبع بيعي ارتدادي (شراء Spot/Long)'
+    elif rsi < 32 or mfi < 25:
+        long_score += 28.0 + max(0.0, (32 - min(32, rsi)) * 1.5)
+        long_sig = 'تشبع بيعي ارتدادي (مراقبة شراء)'
         long_col = 'amber'
     elif dist_res <= 1.5 and p_di > m_di:
         long_score += 15.0
@@ -1433,31 +1461,38 @@ def score_opportunity(item: dict) -> tuple:
     long_score += vol_boost
 
     # 2. Short Opportunity Scoring (Futures Short Only)
-    if m_di > p_di:
-        short_score += 6.0
-    if m_di > p_di and adx >= 24 and chg < 0:
-        short_score += 28.0 + min(18.0, (adx - 20) * 1.5)
-        short_sig = 'زخم هابط قوي (بيع Futures/Short)'
-        short_col = 'rose'
-    elif dist_res <= 2.2 and rsi >= 48 and m_di > p_di:
-        short_score += 30.0 + max(0.0, (2.2 - dist_res) * 5)
-        short_sig = 'ارتداد بيعي من المقاومة (Futures/Short)'
-        short_col = 'rose'
-    elif rsi > 70 and m_di > p_di:
-        short_score += 28.0 + max(0.0, (rsi - 70) * 1.5)
-        short_sig = 'تشبع شرائي تصريفي (Futures/Short)'
+    # HARD OVERSOLD VETO: If RSI < 35 or MFI < 25, the market is in deep oversold exhaustion.
+    # Shorting here is strictly forbidden!
+    if rsi < 35.0 or mfi < 25.0:
+        short_score = int(max(15, 36 - max(0, 35 - rsi) * 1.5 - max(0, 25 - mfi)))
+        short_sig = 'تشبع واستنزاف بيعي (مراقبة ارتداد صاعد)'
         short_col = 'amber'
-    elif dist_sup <= 1.8 and m_di > p_di and adx >= 22:
-        short_score += 22.0
-        short_sig = 'كسر دعم هابط (Futures/Short)'
-        short_col = 'rose'
     else:
-        short_sig = 'تذبذب هابط ضعيف'
-        short_col = 'slate'
-    short_score += vol_boost
+        if m_di > p_di:
+            short_score += 6.0
+        if m_di > p_di and adx >= 24 and chg < 0 and 35.0 <= rsi <= 65.0:
+            short_score += 28.0 + min(18.0, (adx - 20) * 1.5)
+            short_sig = 'زخم هابط متزن (بيع Futures/Short)'
+            short_col = 'rose'
+        elif dist_res <= 2.2 and rsi >= 48 and m_di > p_di:
+            short_score += 30.0 + max(0.0, (2.2 - dist_res) * 5)
+            short_sig = 'ارتداد بيعي من المقاومة (Futures/Short)'
+            short_col = 'rose'
+        elif rsi > 68 and m_di > p_di:
+            short_score += 26.0 + max(0.0, (rsi - 68) * 1.5)
+            short_sig = 'تشبع شرائي تصريفي (Futures/Short)'
+            short_col = 'amber'
+        elif dist_sup <= 1.8 and m_di > p_di and adx >= 22 and 35.0 <= rsi <= 60.0:
+            short_score += 22.0
+            short_sig = 'كسر دعم هابط (Futures/Short)'
+            short_col = 'rose'
+        else:
+            short_sig = 'تذبذب هابط ضعيف'
+            short_col = 'slate'
+        short_score += vol_boost
 
-    # Determine recommended side & engine
-    if short_score > long_score and m_di > p_di and adx >= 20:
+    # Determine recommended side & engine (Only allow short if NOT oversold!)
+    if short_score > long_score and m_di > p_di and adx >= 20 and rsi >= 35.0 and mfi >= 25.0:
         final_score = int(min(98, max(20, round(short_score))))
         signal = short_sig
         color = short_col
@@ -1479,6 +1514,8 @@ def score_opportunity(item: dict) -> tuple:
     item['short_score'] = int(min(98, max(20, round(short_score))))
 
     return final_score, signal, color
+
+
 
 
 
@@ -2921,17 +2958,17 @@ def audit_pair_opportunity(pair: str, engine: str = 'spot', side: str = 'long') 
         fut_long_verdict = 'مؤهل للشراء الآجل (Futures Long) 📈'
         fut_long_reason = f'قوى الشراء (+DI: {p_di}) متفوقة والزخم الاتجاهي قوي (ADX: {adx}) مع رافعة 2.0x.'
 
-    # 3. Futures Short
-    if p_di > m_di:
+    # 3. Futures Short (with Dual RSI + MFI Oversold Veto)
+    if rsi < 35.0 or mfi_val < 25.0:
+        fut_short_score = int(max(10, 28 - max(0, 35 - rsi) - max(0, 25 - mfi_val)))
+        fut_short_badge = 'danger'
+        fut_short_verdict = 'مرفوضة للبيع / تشبع واستنزاف بيعي 🛑'
+        fut_short_reason = f'السوق في ذروة البيع (RSI: {rsi} < 35 | MFI: {mfi_val} < 25)، مخاطرة ارتداد صاعد وشيك ضد صفقة Short.'
+    elif p_di > m_di:
         fut_short_score = int(max(10, 40 - (p_di - m_di) * 2.0))
         fut_short_badge = 'danger'
         fut_short_verdict = 'مرفوضة للبيع / اتجاه صاعد ❌'
         fut_short_reason = f'قوى الشراء (+DI: {p_di}) متفوقة على البيع، فتح صفقات بيع معاكس للاتجاه مخاطرة عالية.'
-    elif rsi <= 22.0:
-        fut_short_score = 32
-        fut_short_badge = 'warning'
-        fut_short_verdict = 'تشبع بيعي في القاع (خطر ارتداد) ⚠️'
-        fut_short_reason = f'مؤشر RSI عند {rsi} وصل لتشبع بيعي حاد يهدد بارتداد صعودي سريع ضد البيع.'
     elif adx < adx_min:
         fut_short_score = 45
         fut_short_badge = 'warning'
@@ -2941,7 +2978,7 @@ def audit_pair_opportunity(pair: str, engine: str = 'spot', side: str = 'long') 
         fut_short_score = int(min(96, max(75, 78 + min(15.0, (adx - 20) * 1.5) + max(0.0, dist_sup_pct * 1.5))))
         fut_short_badge = 'success'
         fut_short_verdict = 'موصى به للبيع على المكشوف (Futures Short) 📉'
-        fut_short_reason = f'قوى البيع (-DI: {m_di}) تسيطر وزخم الهبوط نشط (ADX: {adx}) مما يمنح أفضلية لصفقة Short.'
+        fut_short_reason = f'قوى البيع (-DI: {m_di}) تسيطر وزخم الهبوط متزن دون تشبع (RSI: {rsi} | MFI: {mfi_val}).'
 
     suitability_matrix = {
         'spot_long': {
@@ -3203,9 +3240,75 @@ async def revitalize_and_enter(payload: Optional[dict] = None):
 
 
 
-        # Run Pre-Flight Trade Diagnostic Audit
+        # Anti-Churn Cooldown Guard (منع تكرار فتح صفقات لنفس العملة وحرق الرسوم)
+        try:
+            trades_req = requests.get(f"{api_url}/trades?limit=8", auth=API_AUTH, timeout=2.0)
+            if trades_req.status_code == 200:
+                recent_t_list = trades_req.json()
+                for rt in recent_t_list:
+                    if rt.get('pair') == entry_pair and rt.get('close_timestamp'):
+                        close_sec = rt.get('close_timestamp') / 1000.0
+                        sec_passed = time.time() - close_sec
+                        # 60 minutes cooldown
+                        if sec_passed < 3600:
+                            rem_mins = max(1, int((3600 - sec_passed) / 60))
+                            return {
+                                'status': 'cooldown_active',
+                                'entered': False,
+                                'engine': target_engine,
+                                'pair': entry_pair,
+                                'base': base,
+                                'message': f'⏳ العملة {base} في فترة تهدئة (Cooldown) بعد إغلاق الصفقة #{rt.get("trade_id")}. متبقي {rem_mins} دقيقة لتفادي حرق الرسوم.'
+                            }
+        except Exception as e:
+            logger.debug(f"Error checking trade cooldown: {e}")
 
+        # FreqAI Consensus Gate (التحقق المسبق من توافق توقع الذكاء الاصطناعي للبوت)
+        try:
+            c_res = requests.get(f"{api_url}/pair_candles?pair={entry_pair}&timeframe=1h&limit=1", auth=API_AUTH, timeout=2.5)
+            if c_res.status_code == 200:
+                c_data = c_res.json()
+                c_cols = c_data.get('columns', [])
+                if '&-s_close' in c_cols:
+                    pred_idx = c_cols.index('&-s_close')
+                    c_rows = c_data.get('data', [])
+                    if c_rows:
+                        bot_ai_pred = float(c_rows[-1][pred_idx])
+                        if target_engine == 'futures' and target_side == 'short' and bot_ai_pred > 0.002:
+                            return {
+                                'status': 'consensus_blocked',
+                                'entered': False,
+                                'engine': 'futures',
+                                'pair': entry_pair,
+                                'base': base,
+                                'message': f'🛑 تم حظر الشورت في {base}: نموذج الذكاء الاصطناعي للبوت يتوقع ارتداداً صاعداً (+{bot_ai_pred*100:.2f}%) والدخول الآن سيؤدي لإغلاق فوري بخسارة!'
+                            }
+                        elif target_side == 'long' and bot_ai_pred < -0.005:
+                            return {
+                                'status': 'consensus_blocked',
+                                'entered': False,
+                                'engine': target_engine,
+                                'pair': entry_pair,
+                                'base': base,
+                                'message': f'🛑 تم حظر الشراء في {base}: نموذج الذكاء الاصطناعي للبوت يتوقع هبوطاً بنسبة ({bot_ai_pred*100:.2f}%)!'
+                            }
+        except Exception as e:
+            logger.debug(f"Error checking FreqAI consensus: {e}")
+
+        # Run Pre-Flight Trade Diagnostic Audit
         audit_res = await asyncio.to_thread(audit_pair_opportunity, base, target_engine, target_side)
+
+        # Safety Guard: If auto-enter is active, do NOT enter a trade that fails risk audit!
+        if auto_enter and not audit_res.get('can_enter', True):
+            return {
+                'status': 'safety_aborted',
+                'entered': False,
+                'engine': target_engine,
+                'pair': entry_pair,
+                'base': base,
+                'score': candidate.get('score'),
+                'message': f'🛑 تم حظر الدخول التلقائي في {base} لأن الفحص الكمي الاستباقي صنفها عالية المخاطر ({audit_res.get("verdict")}). تم حماية رأس المال!'
+            }
 
 
 
