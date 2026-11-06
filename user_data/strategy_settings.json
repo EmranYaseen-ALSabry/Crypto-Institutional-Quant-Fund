@@ -30,7 +30,8 @@
                 "stage2_profit": 0.03,
                 "stage2_sell_ratio": 0.35,
                 "runner_sell_ratio": 0.35,
-                "runner_trailing_stop": 0.015
+                "runner_trailing_stop": 0.015,
+                "runner_ratchet_enabled": true
             }
         },
         "futures": {
@@ -47,7 +48,8 @@
                 "stage2_profit": 0.03,
                 "stage2_sell_ratio": 0.35,
                 "runner_sell_ratio": 0.35,
-                "runner_trailing_stop": 0.012
+                "runner_trailing_stop": 0.012,
+                "runner_ratchet_enabled": true
             }
         },
         "minimal_roi_enabled": true,
@@ -103,6 +105,30 @@
             "exhaustion_exit": true,
             "exhaustion_threshold": 85,
             "use_in_ml_features": true
+        }
+    },
+    "scale_management": {
+        "enabled": true,
+        "independent_take_profit": true,
+        "runner_ratchet_enabled": true,
+        "runner_ratchet_trail_pct": 0.015,
+        "spot": {
+            "enable_dip_dca": true,
+            "max_dca_count": 1,
+            "dca_stake_pct_of_trade": 0.5,
+            "dca_require_15m_green": true,
+            "enable_pyramiding": false,
+            "pyramiding_profit_trigger": 0.025,
+            "pyramiding_stake_pct_of_trade": 0.5
+        },
+        "futures": {
+            "enable_dip_dca": true,
+            "max_dca_count": 1,
+            "dca_stake_pct_of_trade": 0.5,
+            "dca_require_15m_green": true,
+            "enable_pyramiding": false,
+            "pyramiding_profit_trigger": 0.025,
+            "pyramiding_stake_pct_of_trade": 0.5
         }
     }
 }

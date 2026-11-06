@@ -1690,34 +1690,47 @@ class InstitutionalDualStrategy(IStrategy):
 
 
 
+            # -------------------------------------------------------------            # -------------------------------------------------------------
+            # Pyramiding Breakeven Lock Protection
             # -------------------------------------------------------------
-
-            # Stage 2 Trailing (Runner Protection)
-
-            # If Stage 2 executed or profit reached stage2 target, trail runner
+            if trade.get_custom_data("pyramid_breakeven_lock", False):
+                be_profit = 0.002
+                if current_profit > be_profit:
+                    desired_sl_from_open = be_profit
+                    return stoploss_from_open(
+                        desired_sl_from_open,
+                        current_profit,
+                        is_short=trade.is_short,
+                        leverage=leverage
+                    )
 
             # -------------------------------------------------------------
-
+            # Stage 2 Trailing (Monotonic Peak Ratchet Runner Protection)
+            # -------------------------------------------------------------
             s2_profit = float(ptp_cfg.get("stage2_profit", 0.030))
-
             if "stage2" in executed_stages or current_profit >= s2_profit:
-
                 runner_trailing = float(ptp_cfg.get("runner_trailing_stop", 0.015))
-
                 s1_profit = float(ptp_cfg.get("stage1_profit", 0.015))
 
-                desired_sl_from_open = max(s1_profit, current_profit - runner_trailing)
+                # Track highest peak profit achieved (never decays backwards)
+                peak_profit = float(trade.get_custom_data("runner_peak_profit", 0.0) or 0.0)
+                if current_profit > peak_profit:
+                    peak_profit = current_profit
+                    trade.set_custom_data("runner_peak_profit", peak_profit)
 
+                # Monotonic Ratchet Floors:
+                ratchet_floor = s1_profit
+                if peak_profit >= 0.06:
+                    ratchet_floor = max(ratchet_floor, 0.045)
+                if peak_profit >= 0.10:
+                    ratchet_floor = max(ratchet_floor, 0.080)
+
+                desired_sl_from_open = max(ratchet_floor, peak_profit - runner_trailing)
                 return stoploss_from_open(
-
                     desired_sl_from_open,
-
                     current_profit,
-
                     is_short=trade.is_short,
-
                     leverage=leverage
-
                 )
 
 
@@ -1929,6 +1942,68 @@ class InstitutionalDualStrategy(IStrategy):
 
 
             min_stake_val = float(min_stake or 10.0)
+            # =========================================================
+            # SCALE-IN ENGINE (Dip DCA & Breakout Pyramiding)
+            # =========================================================
+            scale_cfg = settings.get("scale_management", {})
+            engine_scale = scale_cfg.get(engine_key, {})
+            executed_scale_ins = trade.get_custom_data("executed_scale_ins", default=[])
+            if not isinstance(executed_scale_ins, list):
+                executed_scale_ins = []
+
+            # A. Dip DCA Execution (Averaging down on confirmed 15m bounce)
+            if engine_scale.get("enable_dip_dca", True) and current_profit < -0.015:
+                max_dca = int(engine_scale.get("max_dca_count", 1))
+                dca_done = [x for x in executed_scale_ins if x.startswith("dip_dca_")]
+                if len(dca_done) < max_dca:
+                    # Check 15m micro-candle bounce confirmation
+                    bounce_confirmed = True
+                    if engine_scale.get("dca_require_15m_green", True):
+                        try:
+                            df_15m, _ = self.dp.get_analyzed_dataframe(trade.pair, "15m")
+                            if df_15m is not None and not df_15m.empty:
+                                last_c = df_15m.iloc[-1]
+                                if not trade.is_short:
+                                    bounce_confirmed = last_c["close"] > last_c["open"]
+                                else:
+                                    bounce_confirmed = last_c["close"] < last_c["open"]
+                        except Exception as ex_b:
+                            logger.debug(f"15m DCA bounce check error: {ex_b}")
+
+                    if bounce_confirmed:
+                        dca_ratio = float(engine_scale.get("dca_stake_pct_of_trade", 0.50))
+                        stake_to_buy = initial_stake * dca_ratio
+                        if (trade.stake_amount + stake_to_buy) <= max_stake and stake_to_buy >= min_stake_val:
+                            dca_tag = f"dip_dca_{len(dca_done)+1}"
+                            executed_scale_ins.append(dca_tag)
+                            trade.set_custom_data("executed_scale_ins", executed_scale_ins)
+                            logger.info(
+                                f"[{engine_key.upper()} SCALE-IN DCA] Executing Dip DCA #{len(dca_done)+1} for {trade.pair}. "
+                                f"Profit: {current_profit:.2%}, Adding: ${stake_to_buy:.2f} ({dca_ratio:.0%} of initial)"
+                            )
+                            return (stake_to_buy, dca_tag)
+
+            # B. Breakout Pyramiding Execution (Adding on strength + locking breakeven)
+            if engine_scale.get("enable_pyramiding", False):
+                pyr_trigger = float(engine_scale.get("pyramiding_profit_trigger", 0.025))
+                pyr_done = [x for x in executed_scale_ins if x.startswith("pyramid_")]
+                if current_profit >= pyr_trigger and len(pyr_done) < 1:
+                    pyr_ratio = float(engine_scale.get("pyramiding_stake_pct_of_trade", 0.50))
+                    stake_to_buy = initial_stake * pyr_ratio
+                    if (trade.stake_amount + stake_to_buy) <= max_stake and stake_to_buy >= min_stake_val:
+                        executed_scale_ins.append("pyramid_add")
+                        trade.set_custom_data("executed_scale_ins", executed_scale_ins)
+                        trade.set_custom_data("pyramid_breakeven_lock", True)
+                        logger.info(
+                            f"[{engine_key.upper()} PYRAMIDING] Executing Breakout Add for {trade.pair}. "
+                            f"Profit: {current_profit:.2%}, Adding: ${stake_to_buy:.2f} ({pyr_ratio:.0%} of initial)"
+                        )
+                        return (stake_to_buy, "pyramid_add")
+
+            # =========================================================
+            # SCALE-OUT ENGINE (Independent Multi-Stage Take-Profit)
+            # =========================================================
+
 
 
 

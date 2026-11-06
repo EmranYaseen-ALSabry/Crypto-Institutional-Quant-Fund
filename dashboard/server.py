@@ -510,7 +510,7 @@ def sanitize_strategy_settings(disk_settings: dict, incoming_settings: dict) -> 
 
     merged = json.loads(json.dumps(disk_settings))
 
-    for root_key in ["ai_model", "risk_management", "indicators"]:
+    for root_key in ["ai_model", "risk_management", "indicators", "scale_management"]:
 
         if root_key in incoming_settings and isinstance(incoming_settings[root_key], dict):
 
@@ -590,6 +590,61 @@ async def save_all_configs(payload: dict):
 
 
 
+
+
+
+
+@app.get("/api/scale_management")
+async def get_scale_management():
+    settings = read_json_file(STRATEGY_SETTINGS_PATH)
+    return settings.get("scale_management", {})
+
+
+@app.post("/api/scale_management/save")
+async def save_scale_management(payload: dict):
+    settings = read_json_file(STRATEGY_SETTINGS_PATH)
+    settings["scale_management"] = payload
+    ok = write_json_atomic(STRATEGY_SETTINGS_PATH, settings)
+    return {"status": "saved" if ok else "error", "scale_management": payload}
+
+
+@app.get("/api/scale_management/flowchart")
+async def get_scale_flowchart():
+    settings = read_json_file(STRATEGY_SETTINGS_PATH)
+    scale = settings.get("scale_management", {})
+    spot_scale = scale.get("spot", {})
+    fut_scale = scale.get("futures", {})
+    
+    dca_enabled = spot_scale.get("enable_dip_dca", True)
+    dca_max = spot_scale.get("max_dca_count", 1)
+    dca_pct = int(spot_scale.get("dca_stake_pct_of_trade", 0.5) * 100)
+    pyr_enabled = spot_scale.get("enable_pyramiding", False)
+    pyr_pct = int(spot_scale.get("pyramiding_stake_pct_of_trade", 0.5) * 100)
+    pyr_trig = spot_scale.get("pyramiding_profit_trigger", 0.025) * 100
+
+    mermaid = f"""flowchart TD
+    Trade["صفقة نشطة (Active Trade)"] --> CheckProfit{{"هل الصفقة رابحة أم في تراجع؟"}}
+    CheckProfit -- "الصفقة رابحة (+Profit)" --> TP["🎯 جني أرباح مستقل وغير مشروط:\n• عند +1.5% ⬅️ بيع 30% كاش\n• عند +3.0% ⬅️ بيع 35% + قفل الوقف عند +1.5%\n• الـ Runner 35% ⬅️ تصعيد الوقف المسنن (Ratchet Lock)"]
+    CheckProfit -- "الصفقة في تراجع (-Drawdown)" --> CheckDCA{{"التعزيز عند الهبوط (Dip DCA):\n{'مفعل (ENABLED)' if dca_enabled else 'معطل (DISABLED)'}"}}
+    """
+    if dca_enabled:
+        mermaid += f"""
+    CheckDCA -- مفعل --> Check15m{{"هل شمعة 15m خضراء ارتدادية\nفوق الدعم؟"}}
+    Check15m -- نعم --> ExecDCA["🟢 تنفيذ شريحة تعزيز {dca_pct}% من الصفقة\n• الحد الأقصى: {dca_max} مرة فقط\n• خفض متوسط الشراء\n• ربط الوقف بقاع الارتداد"]
+    Check15m -- "لا (شموع حمراء هابطة)" --> BlockDCA["🛑 حظر التعزيز (سكين هابطة)\nخروج بوقف أولي بحجم صغير فقط"]
+    """
+    else:
+        mermaid += """
+    CheckDCA -- معطل --> Hold["حظر التعزيز والاعتماد على الوقف لحماية الحساب"]
+    """
+    
+    if pyr_enabled:
+        mermaid += f"""
+    TP --> CheckPyr{{"الهرمية الصاعدة (Pyramiding):\nمفعلة (ربح > {pyr_trig:.1f}%)"}}
+    CheckPyr -- نعم --> ExecPyr["🔵 إضافة شريحة قوة {pyr_pct}% من الصفقة\n• رفع الوقف فوراً لنقطة التعادل\n• قفل الهرمية للصفقة"]
+    """
+
+    return {"mermaid": mermaid, "settings": scale}
 
 
 @app.get("/api/trades")
