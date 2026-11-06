@@ -2034,10 +2034,17 @@ def audit_pair_opportunity(pair: str, engine: str = 'spot', side: str = 'long') 
             return {'status': 'error', 'message': f'تعذر جلب بيانات الشموع اللحظية لـ {clean}'}
 
         klines = r.json()
-
     except Exception as e:
-
         return {'status': 'error', 'message': f'خطأ اتصال مع Binance: {str(e)}'}
+
+    # 1.5 Fetch recent 15m klines from Binance for micro-confirmation
+    klines_15m = []
+    try:
+        r15 = requests.get('https://api.binance.com/api/v3/klines', params={'symbol': sym_binance, 'interval': '15m', 'limit': 30}, timeout=3.5)
+        if r15.status_code == 200:
+            klines_15m = r15.json()
+    except Exception:
+        pass
 
 
 
@@ -2817,6 +2824,63 @@ def audit_pair_opportunity(pair: str, engine: str = 'spot', side: str = 'long') 
                 'value': f'MFI: {mfi_val}',
                 'detail': f'مؤشر MFI بيعياً ({mfi_val}) لا يزال مرتفعاً وغير مواتٍ لصفقة بيع.'
             })
+
+    # Check 6: Multi-Timeframe 15m Micro-Reversal & Volume Confirmation
+    if klines_15m and len(klines_15m) >= 20:
+        c15_last = klines_15m[-1]
+        c15_prev = klines_15m[-2]
+        c15_open = float(c15_last[1])
+        c15_close = float(c15_last[4])
+        c15_prev_close = float(c15_prev[4])
+        c15_vol = float(c15_last[5])
+        vols_15m = [float(k[5]) for k in klines_15m[-21:-1]]
+        v15_ma = np.mean(vols_15m) if vols_15m else c15_vol
+        vol_ratio_15m = round(c15_vol / v15_ma, 2) if v15_ma > 0 else 1.0
+
+        if side == 'long':
+            is_bull_15m = (c15_close > c15_open) or (c15_close > c15_prev_close)
+            has_vol_15m = (vol_ratio_15m >= 1.0) or (is_bull_15m and vol_ratio_15m >= 0.85)
+
+            if is_bull_15m and has_vol_15m:
+                checks.append({
+                    'id': 'mtf_15m_confirm',
+                    'name': 'تأكيد الارتداد المصغر (15 دقيقة)',
+                    'status': 'pass',
+                    'badge': 'شمعة انعكاس صاعدة',
+                    'value': f'15m: صعود خضر (فوليوم {vol_ratio_15m}x)',
+                    'detail': f'شمعة الـ 15 دقيقة الحالية خضراء مع فوليوم نشط ({vol_ratio_15m}x)، مما يؤكد ارتداد المشترين عند القاع.'
+                })
+            else:
+                checks.append({
+                    'id': 'mtf_15m_confirm',
+                    'name': 'تأكيد الارتداد المصغر (15 دقيقة)',
+                    'status': 'warning',
+                    'badge': 'انتظار شمعة انعكاس 15m',
+                    'value': f'15m: تراجع/انتظار (فوليوم {vol_ratio_15m}x)',
+                    'detail': 'شمعة الـ 15 دقيقة لا تزال حمراء أو بحجم تداول ضعيف؛ يفضل انتظار ظهور أول شمعة خضراء لتأكيد القاع.'
+                })
+        else:
+            is_bear_15m = (c15_close < c15_open) or (c15_close < c15_prev_close)
+            has_vol_15m = (vol_ratio_15m >= 1.0) or (is_bear_15m and vol_ratio_15m >= 0.85)
+
+            if is_bear_15m and has_vol_15m:
+                checks.append({
+                    'id': 'mtf_15m_confirm',
+                    'name': 'تأكيد الارتداد المصغر (15 دقيقة)',
+                    'status': 'pass',
+                    'badge': 'شمعة رفض هابطة',
+                    'value': f'15m: رفض هابط (فوليوم {vol_ratio_15m}x)',
+                    'detail': f'شمعة الـ 15 دقيقة تؤكد رفض المقاومة مع فوليوم بيعي نشط ({vol_ratio_15m}x).'
+                })
+            else:
+                checks.append({
+                    'id': 'mtf_15m_confirm',
+                    'name': 'تأكيد الارتداد المصغر (15 دقيقة)',
+                    'status': 'warning',
+                    'badge': 'انتظار شمعة رفض 15m',
+                    'value': f'15m: صعود/انتظار (فوليوم {vol_ratio_15m}x)',
+                    'detail': 'شمعة الـ 15 دقيقة لم تؤكد الرفض الهابط بعد؛ يفضل انتظار اكتمال الشمعة الحمراء.'
+                })
 
     # Composite Scoring & Verdict
 

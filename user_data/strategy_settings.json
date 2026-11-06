@@ -89,7 +89,9 @@
             "use_for_stoploss": true,
             "min_resistance_headroom_pct": 0.025,
             "min_support_headroom_pct": 0.025,
-            "support_tolerance_pct": 0.015
+            "support_tolerance_pct": 0.015,
+            "use_mtf_15m_confirmation": true,
+            "min_volume_ratio_15m": 1.1
         },
         "mfi": {
             "enabled": true,

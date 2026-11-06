@@ -896,6 +896,17 @@ class InstitutionalDualStrategy(IStrategy):
 
 
 
+    def informative_pairs(self):
+        """
+        Multi-Timeframe Informative Data Pipeline:
+        Loads and caches 15m candles for all whitelist pairs to enable sub-candle micro confirmation.
+        """
+        try:
+            whitelist = self.dp.current_whitelist()
+            return [(pair, '15m') for pair in whitelist]
+        except Exception:
+            return []
+
     def bot_loop_start(self, current_time: datetime, **kwargs) -> None:
 
         """
@@ -1237,6 +1248,34 @@ class InstitutionalDualStrategy(IStrategy):
 
 
 
+        # Multi-Timeframe (15m) Micro-Reversal & Volume Surge Gatekeeper (Catch Bottoms Cleanly)
+        use_mtf_15m = sr_cfg.get("use_mtf_15m_confirmation", True)
+        if use_mtf_15m and hasattr(self, 'dp') and self.dp:
+            try:
+                inf_15m = self.dp.get_pair_dataframe(pair=metadata['pair'], timeframe='15m')
+                if inf_15m is not None and not inf_15m.empty and len(inf_15m) >= 20:
+                    last_c = inf_15m.iloc[-1]
+                    prev_c = inf_15m.iloc[-2]
+                    vol_ma_15m = inf_15m['volume'].tail(20).mean()
+                    min_v_ratio = float(sr_cfg.get("min_volume_ratio_15m", 1.10))
+
+                    # 1. Bullish candle: green candle or higher close
+                    is_bullish_15m = (last_c['close'] > last_c['open']) or (last_c['close'] > prev_c['close'])
+
+                    # 2. Volume confirmation: active buyer participation
+                    has_volume_15m = (last_c['volume'] >= vol_ma_15m * min_v_ratio) or (is_bullish_15m and last_c['volume'] >= vol_ma_15m * 0.90)
+
+                    # 3. Micro RSI 15m recovering (not falling in free-fall crash)
+                    rsi_15m_series = ta.RSI(inf_15m, timeperiod=14)
+                    rsi_15m = rsi_15m_series.iloc[-1] if not rsi_15m_series.empty else 50.0
+                    rsi_ok_15m = (rsi_15m >= 30.0)
+
+                    # Gatekeeper: If 15m is currently dumping red candles without volume, prevent catching falling knives!
+                    if not (is_bullish_15m and has_volume_15m and rsi_ok_15m):
+                        long_conditions.append(pd.Series(False, index=df.index))
+            except Exception as ex_mtf:
+                logger.debug(f"15m MTF long confirmation pass-through on {metadata.get('pair')}: {ex_mtf}")
+
         if 'DI_values' in df.columns:
 
             # Dissimilarity Index check: Discard predictions in unseen outlier regimes
@@ -1348,6 +1387,32 @@ class InstitutionalDualStrategy(IStrategy):
                 short_conditions.append(sup_clearance)
 
 
+
+            # Multi-Timeframe (15m) Micro-Rejection & Volume Gatekeeper for Shorts
+            if use_mtf_15m and hasattr(self, 'dp') and self.dp:
+                try:
+                    inf_15m = self.dp.get_pair_dataframe(pair=metadata['pair'], timeframe='15m')
+                    if inf_15m is not None and not inf_15m.empty and len(inf_15m) >= 20:
+                        last_c = inf_15m.iloc[-1]
+                        prev_c = inf_15m.iloc[-2]
+                        vol_ma_15m = inf_15m['volume'].tail(20).mean()
+                        min_v_ratio = float(sr_cfg.get("min_volume_ratio_15m", 1.10))
+
+                        # 1. Bearish candle: red candle or lower close
+                        is_bearish_15m = (last_c['close'] < last_c['open']) or (last_c['close'] < prev_c['close'])
+
+                        # 2. Volume confirmation
+                        has_volume_15m = (last_c['volume'] >= vol_ma_15m * min_v_ratio) or (is_bearish_15m and last_c['volume'] >= vol_ma_15m * 0.90)
+
+                        # 3. Micro RSI 15m not overbought pump
+                        rsi_15m_series = ta.RSI(inf_15m, timeperiod=14)
+                        rsi_15m = rsi_15m_series.iloc[-1] if not rsi_15m_series.empty else 50.0
+                        rsi_ok_15m = (rsi_15m <= 70.0)
+
+                        if not (is_bearish_15m and has_volume_15m and rsi_ok_15m):
+                            short_conditions.append(pd.Series(False, index=df.index))
+                except Exception as ex_mtf:
+                    logger.debug(f"15m MTF short confirmation pass-through on {metadata.get('pair')}: {ex_mtf}")
 
             if 'DI_values' in df.columns:
 
