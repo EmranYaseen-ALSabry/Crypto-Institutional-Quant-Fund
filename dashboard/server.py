@@ -2530,100 +2530,80 @@ def audit_pair_opportunity(pair: str, engine: str = 'spot', side: str = 'long') 
 
 
 
-    # Check 3: S/R Channels Proximity
-
+    # Check 3: S/R Channels Proximity & Headroom Guard
     if side == 'long':
-
-        if dist_sup_pct <= 2.8:
-
+        if dist_res_pct < 2.0:
             checks.append({
-
                 'id': 'sr_proximity',
-
                 'name': 'قنوات الدعم والمقاومة S/R',
-
-                'status': 'pass',
-
-                'badge': 'ارتداد مثالي من الدعم',
-
-                'value': f'دعم: +{dist_sup_pct}% | مقاومة: -{dist_res_pct}%',
-
-                'detail': f'السعر قريب جداً من أرضية الدعم (+{dist_sup_pct}%) مما يوفر وقف خسارة آمن ونسبة عائد مجزية.'
-
-            })
-
-        elif dist_sup_pct <= 6.0:
-
-            checks.append({
-
-                'id': 'sr_proximity',
-
-                'name': 'قنوات الدعم والمقاومة S/R',
-
-                'status': 'warning',
-
-                'badge': 'متوسط البعد عن الدعم',
-
-                'value': f'دعم: +{dist_sup_pct}% | مقاومة: -{dist_res_pct}%',
-
-                'detail': f'السعر يبتعد (+{dist_sup_pct}%) عن الدعم، يفضل وضع وقف خسارة متحفظ.'
-
-            })
-
-        else:
-
-            checks.append({
-
-                'id': 'sr_proximity',
-
-                'name': 'قنوات الدعم والمقاومة S/R',
-
                 'status': 'danger',
-
-                'badge': 'تضخم سعري بعيد عن الدعم',
-
+                'badge': 'خطر سقف المقاومة',
                 'value': f'دعم: +{dist_sup_pct}% | مقاومة: -{dist_res_pct}%',
-
-                'detail': f'السعر متضخم وبعيد جداً عن أرضية الدعم (+{dist_sup_pct}% > 6%)، مخاطرة الشراء عند القمة مرتفعة جداً!'
-
+                'detail': f'السعر يلتصق بسقف المقاومة (-{dist_res_pct}% < 2.0%)، هامش الربح قبل المقاومة ضئيل جداً وخطر الارتداد الهابط مرتفع!'
             })
-
-    else:
-
-        if dist_res_pct <= 2.8:
-
+        elif dist_sup_pct <= 2.5 and dist_res_pct >= 2.5:
             checks.append({
-
                 'id': 'sr_proximity',
-
                 'name': 'قنوات الدعم والمقاومة S/R',
-
                 'status': 'pass',
-
-                'badge': 'منطقة بيع مثالية من المقاومة',
-
-                'value': f'مقاومة: -{dist_res_pct}% | دعم: +{dist_sup_pct}%',
-
-                'detail': f'السعر ملامس لجدار المقاومة (-{dist_res_pct}%) مع وقف خسارة ضيق جداً.'
-
+                'badge': 'ارتداد مثالي من الدعم',
+                'value': f'دعم: +{dist_sup_pct}% | مقاومة: -{dist_res_pct}%',
+                'detail': f'السعر قريب جداً من أرضية الدعم (+{dist_sup_pct}%) مع هامش صعود آمن للمقاومة (-{dist_res_pct}%).'
             })
-
-        else:
-
+        elif dist_sup_pct <= 5.0 and dist_res_pct >= 2.0:
             checks.append({
-
                 'id': 'sr_proximity',
-
                 'name': 'قنوات الدعم والمقاومة S/R',
-
                 'status': 'warning',
-
-                'badge': 'متوسط البعد عن المقاومة',
-
+                'badge': 'متوسط البعد عن الدعم',
+                'value': f'دعم: +{dist_sup_pct}% | مقاومة: -{dist_res_pct}%',
+                'detail': f'السعر يبتعد (+{dist_sup_pct}%) عن الدعم مع هامش معقول للمقاومة (-{dist_res_pct}%).'
+            })
+        else:
+            checks.append({
+                'id': 'sr_proximity',
+                'name': 'قنوات الدعم والمقاومة S/R',
+                'status': 'danger',
+                'badge': 'تضخم سعري بعيد عن الدعم',
+                'value': f'دعم: +{dist_sup_pct}% | مقاومة: -{dist_res_pct}%',
+                'detail': f'السعر متضخم وبعيد جداً عن أرضية الدعم (+{dist_sup_pct}% > 5%) أو غير كافٍ قبل المقاومة، مخاطرة القمة مرتفعة جداً!'
+            })
+    else:  # short
+        if dist_sup_pct < 2.0:
+            checks.append({
+                'id': 'sr_proximity',
+                'name': 'قنوات الدعم والمقاومة S/R',
+                'status': 'danger',
+                'badge': 'خطر أرضية الدعم',
                 'value': f'مقاومة: -{dist_res_pct}% | دعم: +{dist_sup_pct}%',
-
-                'detail': f'السعر يبعد بنسبة (-{dist_res_pct}%) عن المقاومة.'
-
+                'detail': f'السعر يلتصق بأرضية الدعم (+{dist_sup_pct}% < 2.0%)، البيع على المكشوف هنا عالي المخاطر لاحتمالية الارتداد الصاعد!'
+            })
+        elif dist_res_pct <= 2.5 and dist_sup_pct >= 2.5:
+            checks.append({
+                'id': 'sr_proximity',
+                'name': 'قنوات الدعم والمقاومة S/R',
+                'status': 'pass',
+                'badge': 'منطقة بيع مثالية من المقاومة',
+                'value': f'مقاومة: -{dist_res_pct}% | دعم: +{dist_sup_pct}%',
+                'detail': f'السعر ملامس لجدار المقاومة (-{dist_res_pct}%) مع هامش هبوط آمن حتى الدعم (+{dist_sup_pct}%).'
+            })
+        elif dist_res_pct <= 5.0 and dist_sup_pct >= 2.0:
+            checks.append({
+                'id': 'sr_proximity',
+                'name': 'قنوات الدعم والمقاومة S/R',
+                'status': 'warning',
+                'badge': 'متوسط البعد عن المقاومة',
+                'value': f'مقاومة: -{dist_res_pct}% | دعم: +{dist_sup_pct}%',
+                'detail': f'السعر يبعد بنسبة (-{dist_res_pct}%) عن المقاومة مع هامش متاح للدعم.'
+            })
+        else:
+            checks.append({
+                'id': 'sr_proximity',
+                'name': 'قنوات الدعم والمقاومة S/R',
+                'status': 'danger',
+                'badge': 'قاع بيعي غير ملائم',
+                'value': f'مقاومة: -{dist_res_pct}% | دعم: +{dist_sup_pct}%',
+                'detail': f'السعر بعيد جداً عن المقاومة (-{dist_res_pct}% > 5%) ومقترب من قاع تصحيحي، البيع هنا متأخر وخطر!'
             })
 
 

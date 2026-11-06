@@ -72,7 +72,8 @@
         },
         "ema_filter": {
             "enabled": true,
-            "macro_period": 200
+            "macro_period": 200,
+            "max_dist_ema_pct": 0.028
         },
         "volume_filter": {
             "enabled": true,
@@ -85,7 +86,10 @@
             "min_strength": 2,
             "use_for_entry": true,
             "use_for_exit": true,
-            "use_for_stoploss": true
+            "use_for_stoploss": true,
+            "min_resistance_headroom_pct": 0.025,
+            "min_support_headroom_pct": 0.025,
+            "support_tolerance_pct": 0.015
         },
         "mfi": {
             "enabled": true,

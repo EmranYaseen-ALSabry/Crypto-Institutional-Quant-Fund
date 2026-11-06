@@ -51,7 +51,8 @@
             "ZEC/USDT:USDT",
             "WLD/USDT:USDT",
             "BEAMX/USDT:USDT",
-            "TRX/USDT:USDT"
+            "TRX/USDT:USDT",
+            "TRUMP/USDT:USDT"
         ],
         "pair_blacklist": [
             "(.*)/BNB:USDT",

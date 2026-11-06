@@ -51,7 +51,8 @@
             "ZEC/USDT",
             "WLD/USDT",
             "TRX/USDT",
-            "BEAMX/USDT"
+            "BEAMX/USDT",
+            "UNI/USDT"
         ],
         "pair_blacklist": [
             "(.*)/BNB",

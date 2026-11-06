@@ -1124,6 +1124,7 @@ class InstitutionalDualStrategy(IStrategy):
         df['atr_live'] = ta.ATR(df, timeperiod=14)
 
         df['ema_200_live'] = ta.EMA(df, timeperiod=200)
+        df['ema_20_live'] = ta.EMA(df, timeperiod=20)
 
         df['rsi_live'] = ta.RSI(df, timeperiod=14)
         df['mfi_live'] = ta.MFI(df, timeperiod=int(mfi_cfg.get('timeperiod', 14)))
@@ -1208,23 +1209,31 @@ class InstitutionalDualStrategy(IStrategy):
 
 
 
-        # Support Resistance Channels Rebound Filter
+        # Extended Price / Mean Reversion Guard (Anti-Chasing Rally Highs)
+        max_dist_ema = float(ema_cfg.get("max_dist_ema_pct", 0.028))
+        if max_dist_ema > 0:
+            long_conditions.append(df['close'] <= df['ema_20_live'] * (1.0 + max_dist_ema))
 
+        # Support Resistance Channels Rebound & Resistance Headroom Filter
         sr_cfg = ind_cfg.get("sr_channels", {})
-
         if sr_cfg.get("enabled", False) and sr_cfg.get("use_for_entry", True):
-
             chan_w = float(sr_cfg.get("channel_width_pct", 0.025))
+            support_tol = float(sr_cfg.get("support_tolerance_pct", 0.015))
+            min_res_headroom = float(sr_cfg.get("min_resistance_headroom_pct", 0.025))
 
-            # If support level detected, price must be near support floor (within 1.5 * channel width)
-
+            # If support level detected, price must be tight to support floor (avoid buying overextended)
             has_support = (df['sr_support_top'] > 0)
-
-            near_support = (df['close'] <= df['sr_support_top'] * (1.0 + chan_w * 1.5)) & (df['close'] >= df['sr_support_bot'] * 0.985)
-
-            # Require rebound confluence: either near valid support or support not yet formed
-
+            near_support = (df['close'] <= df['sr_support_top'] * (1.0 + support_tol)) & (df['close'] >= df['sr_support_bot'] * 0.985)
             long_conditions.append((~has_support) | near_support)
+
+            # Mandatory Resistance Headroom Check: Never buy directly into a resistance ceiling!
+            has_resistance = (df['sr_resistance_bot'] > 0)
+            res_clearance = (
+                (~has_resistance)
+                | ((df['sr_resistance_bot'] - df['close']) / df['close'] >= min_res_headroom)
+                | (df['close'] > df['sr_resistance_top'] * 1.002)
+            )
+            long_conditions.append(res_clearance)
 
 
 
@@ -1308,17 +1317,35 @@ class InstitutionalDualStrategy(IStrategy):
 
                 short_conditions.append(df['volume'] >= (df['vol_ma_live'] * min_vol_ratio))
 
+            # Extended Price / Mean Reversion Guard for Shorts (Anti-Dumping Lows)
+            if max_dist_ema > 0:
+                short_conditions.append(df['close'] >= df['ema_20_live'] * (1.0 - max_dist_ema))
+
             # MFI Money Flow Liquidity Filter (Volume-Weighted Oversold Guard)
-
             if mfi_cfg.get("enabled", True):
-
                 short_mfi_min = float(mfi_cfg.get("short_mfi_min", 25.0))
-
                 short_mfi_max = float(mfi_cfg.get("short_mfi_max", 55.0))
-
                 short_conditions.append(df['mfi_live'] >= short_mfi_min)
-
                 short_conditions.append(df['mfi_live'] <= short_mfi_max)
+
+            # S/R Channels Resistance Rebound & Support Clearance Filter for Shorts
+            if sr_cfg.get("enabled", False) and sr_cfg.get("use_for_entry", True):
+                res_tol = float(sr_cfg.get("resistance_tolerance_pct", 0.015))
+                min_sup_headroom = float(sr_cfg.get("min_support_headroom_pct", 0.025))
+
+                # If resistance detected, price must be near resistance ceiling
+                has_resistance = (df['sr_resistance_bot'] > 0)
+                near_resistance = (df['close'] >= df['sr_resistance_bot'] * (1.0 - res_tol)) & (df['close'] <= df['sr_resistance_top'] * 1.015)
+                short_conditions.append((~has_resistance) | near_resistance)
+
+                # Mandatory Support Headroom Check: Never short directly into a support floor!
+                has_support = (df['sr_support_top'] > 0)
+                sup_clearance = (
+                    (~has_support)
+                    | ((df['close'] - df['sr_support_top']) / df['close'] >= min_sup_headroom)
+                    | (df['close'] < df['sr_support_bot'] * 0.998)
+                )
+                short_conditions.append(sup_clearance)
 
 
 

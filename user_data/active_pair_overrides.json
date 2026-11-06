@@ -1,1 +1,8 @@
-{}
+{
+    "TRUMP/USDT:USDT": {
+        "stoploss_price": 1.232823,
+        "engine": "futures",
+        "side": "short",
+        "timestamp": "2026-11-05T23:13:06.409416"
+    }
+}
