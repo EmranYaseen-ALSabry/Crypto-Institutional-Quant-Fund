@@ -113,22 +113,32 @@
         "runner_ratchet_enabled": true,
         "runner_ratchet_trail_pct": 0.015,
         "spot": {
+            "initial_stake_pct": 0.4,
             "enable_dip_dca": true,
             "max_dca_count": 1,
-            "dca_stake_pct_of_trade": 0.5,
+            "dca_trigger_drawdown_pct": -0.018,
+            "dca_stake_pct_1": 0.6,
+            "dca_stake_pct_2": 0.4,
             "dca_require_15m_green": true,
+            "min_dist_to_sl_pct": 0.012,
             "enable_pyramiding": false,
             "pyramiding_profit_trigger": 0.025,
-            "pyramiding_stake_pct_of_trade": 0.5
+            "pyramiding_stake_pct": 0.5,
+            "pyramiding_breakeven_lock": true
         },
         "futures": {
+            "initial_stake_pct": 0.4,
             "enable_dip_dca": true,
             "max_dca_count": 1,
-            "dca_stake_pct_of_trade": 0.5,
+            "dca_trigger_drawdown_pct": -0.018,
+            "dca_stake_pct_1": 0.6,
+            "dca_stake_pct_2": 0.4,
             "dca_require_15m_green": true,
+            "min_dist_to_sl_pct": 0.012,
             "enable_pyramiding": false,
             "pyramiding_profit_trigger": 0.025,
-            "pyramiding_stake_pct_of_trade": 0.5
+            "pyramiding_stake_pct": 0.5,
+            "pyramiding_breakeven_lock": true
         }
     }
 }

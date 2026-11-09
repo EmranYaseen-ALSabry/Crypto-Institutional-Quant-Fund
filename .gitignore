@@ -35,3 +35,11 @@ user_data/models/*
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Scratch and temporary generation artifacts
+scratch/
+AI_Quant_Fund_Presentation.mp4
+Crypto-Fund-Isolated.zip
+*.txt.bak
+مستند نصي جديد.txt
+

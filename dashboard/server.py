@@ -104,7 +104,7 @@ API_AUTH = ("fund_admin", "InstitutionalQuant2026!")
 
 app = FastAPI(
 
-    title="Institutional Quant Fund Control Center",
+    title="AI Quant Fund Command Center",
 
     version="2.0.0",
 
@@ -615,36 +615,63 @@ async def get_scale_flowchart():
     spot_scale = scale.get("spot", {})
     fut_scale = scale.get("futures", {})
     
+    init_pct = int(spot_scale.get("initial_stake_pct", 0.40) * 100)
+    reserve_pct = 100 - init_pct
+    
     dca_enabled = spot_scale.get("enable_dip_dca", True)
     dca_max = spot_scale.get("max_dca_count", 1)
-    dca_pct = int(spot_scale.get("dca_stake_pct_of_trade", 0.5) * 100)
+    dca_trig = abs(spot_scale.get("dca_trigger_drawdown_pct", -0.018)) * 100
+    dca_pct_1 = int(spot_scale.get("dca_stake_pct_1", 0.60) * 100)
+    dca_pct_2 = int(spot_scale.get("dca_stake_pct_2", 0.40) * 100)
+    sl_buf = spot_scale.get("min_dist_to_sl_pct", 0.012) * 100
+    dca_15m = spot_scale.get("dca_require_15m_green", True)
+    
     pyr_enabled = spot_scale.get("enable_pyramiding", False)
-    pyr_pct = int(spot_scale.get("pyramiding_stake_pct_of_trade", 0.5) * 100)
+    pyr_pct = int(spot_scale.get("pyramiding_stake_pct", spot_scale.get("pyramiding_stake_pct_of_trade", 0.50)) * 100)
     pyr_trig = spot_scale.get("pyramiding_profit_trigger", 0.025) * 100
+    pyr_be = spot_scale.get("pyramiding_breakeven_lock", True)
+    
+    ratchet_trail = scale.get("runner_ratchet_trail_pct", 0.015) * 100
 
     mermaid = f"""flowchart TD
-    Trade["صفقة نشطة (Active Trade)"] --> CheckProfit{{"هل الصفقة رابحة أم في تراجع؟"}}
-    CheckProfit -- "الصفقة رابحة (+Profit)" --> TP["🎯 جني أرباح مستقل وغير مشروط:\n• عند +1.5% ⬅️ بيع 30% كاش\n• عند +3.0% ⬅️ بيع 35% + قفل الوقف عند +1.5%\n• الـ Runner 35% ⬅️ تصعيد الوقف المسنن (Ratchet Lock)"]
-    CheckProfit -- "الصفقة في تراجع (-Drawdown)" --> CheckDCA{{"التعزيز عند الهبوط (Dip DCA):\n{'مفعل (ENABLED)' if dca_enabled else 'معطل (DISABLED)'}"}}
+    InitEntry["🚀 الدخول الأولي الجزئي ({init_pct}% من الصفقة)\n• الاحتفاظ بـ {reserve_pct}% كاحتياطي تعزيز وهرمية\n• حماية الحساب من مخاطر الانعكاس المبكر"] --> ActiveTrade["📊 صفقة نشطة في السوق (Active Trade)"]
+    
+    ActiveTrade --> CheckStatus{{"تقييم مسار الصفقة اللحظي"}}
+    
+    %% Drawdown Path (Dip DCA)
+    CheckStatus -- "📉 في تراجع (تراجع >= {dca_trig:.1f}%)" --> CheckDCAStatus{{"التعزيز عند الهبوط (Dip DCA):\n{'مفعل (ENABLED)' if dca_enabled else 'معطل (DISABLED)'}"}}
     """
+
     if dca_enabled:
+        dca_desc = f"شريحة 1: {dca_pct_1}%" + (f" | شريحة 2: {dca_pct_2}%" if dca_max > 1 else "")
         mermaid += f"""
-    CheckDCA -- مفعل --> Check15m{{"هل شمعة 15m خضراء ارتدادية\nفوق الدعم؟"}}
-    Check15m -- نعم --> ExecDCA["🟢 تنفيذ شريحة تعزيز {dca_pct}% من الصفقة\n• الحد الأقصى: {dca_max} مرة فقط\n• خفض متوسط الشراء\n• ربط الوقف بقاع الارتداد"]
-    Check15m -- "لا (شموع حمراء هابطة)" --> BlockDCA["🛑 حظر التعزيز (سكين هابطة)\nخروج بوقف أولي بحجم صغير فقط"]
+    CheckDCAStatus -- مفعل --> CheckSLDist{{"هل المسافة للوقف > {sl_buf:.1f}%\n(Anti-Martingale Buffer)؟"}}
+    CheckSLDist -- "لا (قريب من الوقف)" --> BlockNearSL["🛑 حظر التعزيز فوراً لحماية المحفظة\nالخروج بوقف أولي منخفض الحجم فقط"]
+    CheckSLDist -- "نعم (آمن)" --> Check15mBounce{{"هل شمعة 15m خضراء ارتدادية\nفوق مستويات الدعم؟"}}
+    Check15mBounce -- "نعم (ارتداد مؤكد)" --> ExecDipDCA["🟢 تنفيذ التعزيز ({dca_desc})\n• خفض متوسط الشراء التراكمي\n• الحد الأقصى: {dca_max} مرة فقط\n• نقل الوقف لقاع الارتداد"]
+    Check15mBounce -- "لا (شموع هابطة)" --> BlockFallKnife["🛑 حظر التعزيز (سكين هابطة مستمرة)"]
     """
     else:
         mermaid += """
-    CheckDCA -- معطل --> Hold["حظر التعزيز والاعتماد على الوقف لحماية الحساب"]
+    CheckDCAStatus -- معطل --> HoldRisk["حظر التعزيز بالكامل والاعتماد على الوقف لحماية رأس المال"]
     """
-    
+
+    # Take Profit & Ratchet
+    mermaid += f"""
+    CheckStatus -- "📈 تحقيق أرباح (+Profit)" --> IndepTP["🎯 جني أرباح مستقل وغير مشروط:\n• هدف 1 (+1.5%) ⬅️ بيع 30% كاش\n• هدف 2 (+3.0%) ⬅️ بيع 35% كاش + قفل الوقف عند +1.5%"]
+    IndepTP --> RunnerEngine["🏆 الـ Runner 35% المتبقي:\n• تصعيد الوقف المسنن تصاعدياً (Monotonic Ratchet)\n• تتبع بمسافة {ratchet_trail:.1f}%\n• قفل الأرباح في اتجاه واحد دون تراجع"]
+    """
+
+    # Pyramiding Path
     if pyr_enabled:
         mermaid += f"""
-    TP --> CheckPyr{{"الهرمية الصاعدة (Pyramiding):\nمفعلة (ربح > {pyr_trig:.1f}%)"}}
-    CheckPyr -- نعم --> ExecPyr["🔵 إضافة شريحة قوة {pyr_pct}% من الصفقة\n• رفع الوقف فوراً لنقطة التعادل\n• قفل الهرمية للصفقة"]
+    CheckStatus -- "🚀 اختراق مقاومات قوي" --> CheckPyr{{"الهرمية الصاعدة (Breakout Pyramiding):\nمفعلة (ربح > {pyr_trig:.1f}%)"}}
+    CheckPyr -- "نعم (تأكيد القوة)" --> ExecPyr["🔵 إضافة شريحة قوة {pyr_pct}% من الصفقة\n• {'رفع الوقف فوراً لنقطة التعادل +0.2% (Breakeven Lock)' if pyr_be else 'مواصلة الوقف الطبيعي'}\n• قفل الهرمية وتأمين الصفقة"]
+    CheckPyr -- "لا" --> IndepTP
     """
 
     return {"mermaid": mermaid, "settings": scale}
+
 
 
 @app.get("/api/trades")
@@ -4014,7 +4041,7 @@ async def get_auto_sniper_status():
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Institutional Quant Fund Dashboard")
+    parser = argparse.ArgumentParser(description="AI Quant Fund Dashboard")
 
     parser.add_argument("--host", default="0.0.0.0", help="Host IP to bind to")
 
@@ -4026,7 +4053,7 @@ if __name__ == "__main__":
 
     import uvicorn
 
-    logger.info(f"Starting Institutional Quant Fund Dashboard on http://localhost:{args.port}")
+    logger.info(f"Starting AI Quant Fund Dashboard on http://localhost:{args.port}")
 
     uvicorn.run("server:app", host=args.host, port=args.port, reload=False, log_level="info")
 

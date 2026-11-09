@@ -52,7 +52,8 @@
             "WLD/USDT",
             "TRX/USDT",
             "BEAMX/USDT",
-            "UNI/USDT"
+            "UNI/USDT",
+            "PEPE/USDT"
         ],
         "pair_blacklist": [
             "(.*)/BNB",

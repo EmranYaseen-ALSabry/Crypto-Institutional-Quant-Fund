@@ -1,8 +1,20 @@
 {
-    "TRUMP/USDT:USDT": {
-        "stoploss_price": 1.232823,
-        "engine": "futures",
-        "side": "short",
-        "timestamp": "2026-11-05T23:13:06.409416"
-    }
+  "TRUMP/USDT:USDT": {
+    "stoploss_price": 1.232823,
+    "engine": "futures",
+    "side": "short",
+    "timestamp": "2026-11-05T23:13:06.409416"
+  },
+  "BTC/USDT:USDT": {
+    "stoploss_price": 76989.024,
+    "engine": "futures",
+    "side": "short",
+    "timestamp": "2026-11-07T02:22:12.872800"
+  },
+  "ETH/USDT": {
+    "stoploss_price": 2066.4352,
+    "engine": "spot",
+    "side": "long",
+    "timestamp": "2026-11-09T20:59:58.050389"
+  }
 }

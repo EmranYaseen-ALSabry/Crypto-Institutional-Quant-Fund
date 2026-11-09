@@ -52,7 +52,8 @@
             "WLD/USDT:USDT",
             "BEAMX/USDT:USDT",
             "TRX/USDT:USDT",
-            "TRUMP/USDT:USDT"
+            "TRUMP/USDT:USDT",
+            "PEPE/USDT:USDT"
         ],
         "pair_blacklist": [
             "(.*)/BNB:USDT",

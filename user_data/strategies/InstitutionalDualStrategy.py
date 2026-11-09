@@ -523,6 +523,49 @@ class InstitutionalDualStrategy(IStrategy):
 
     # =========================================================================
 
+    def custom_stake_amount(
+        self,
+        pair: str,
+        current_time: datetime,
+        current_rate: float,
+        proposed_stake: float,
+        min_stake: Optional[float],
+        max_stake: float,
+        leverage: float,
+        entry_tag: Optional[str],
+        side: str,
+        **kwargs
+    ) -> float:
+        """
+        Dynamically adjusts initial stake amount to enforce initial probe sizing (e.g. 40% of standard stake).
+        Leaves the remaining allocation (e.g. 60%) for confirmed Dip DCA or Pyramiding.
+        """
+        try:
+            settings = self.load_strategy_settings()
+            scale_cfg = settings.get("scale_management", {})
+            if not scale_cfg.get("enabled", True):
+                return proposed_stake
+
+            engine_key = "futures" if self.is_futures else "spot"
+            engine_scale = scale_cfg.get(engine_key, {})
+
+            initial_ratio = float(engine_scale.get("initial_stake_pct", 0.40))
+            if 0.10 <= initial_ratio <= 1.0:
+                adjusted_stake = proposed_stake * initial_ratio
+                min_s = float(min_stake or 10.0)
+                if adjusted_stake < min_s:
+                    return min(proposed_stake, min_s)
+                logger.info(
+                    f"[{engine_key.upper()} PROBE SIZING] Scaled initial stake for {pair} to ${adjusted_stake:.2f} "
+                    f"({initial_ratio:.0%} of standard ${proposed_stake:.2f})"
+                )
+                return min(adjusted_stake, max_stake)
+        except Exception as e:
+            logger.error(f"Error in custom_stake_amount for {pair}: {e}", exc_info=True)
+
+        return proposed_stake
+
+
     # 1. Leverage Management (Futures Engine)
 
     # =========================================================================
@@ -1952,10 +1995,23 @@ class InstitutionalDualStrategy(IStrategy):
                 executed_scale_ins = []
 
             # A. Dip DCA Execution (Averaging down on confirmed 15m bounce)
-            if engine_scale.get("enable_dip_dca", True) and current_profit < -0.015:
+            dca_trigger = float(engine_scale.get("dca_trigger_drawdown_pct", -0.018))
+            if engine_scale.get("enable_dip_dca", True) and current_profit <= dca_trigger:
                 max_dca = int(engine_scale.get("max_dca_count", 1))
                 dca_done = [x for x in executed_scale_ins if x.startswith("dip_dca_")]
                 if len(dca_done) < max_dca:
+                    # Check safety distance to stop loss (Anti-Martingale Buffer)
+                    min_dist_to_sl = float(engine_scale.get("min_dist_to_sl_pct", 0.012))
+                    sl_dist_ok = True
+                    if trade.stop_loss and trade.stop_loss > 0:
+                        if not trade.is_short:
+                            dist_to_sl = (current_rate - trade.stop_loss) / current_rate
+                        else:
+                            dist_to_sl = (trade.stop_loss - current_rate) / current_rate
+                        if dist_to_sl < min_dist_to_sl:
+                            sl_dist_ok = False
+                            logger.debug(f"[{trade.pair}] DCA blocked: Distance to stop loss ({dist_to_sl:.2%}) < safety buffer ({min_dist_to_sl:.2%})")
+
                     # Check 15m micro-candle bounce confirmation
                     bounce_confirmed = True
                     if engine_scale.get("dca_require_15m_green", True):
@@ -1970,8 +2026,12 @@ class InstitutionalDualStrategy(IStrategy):
                         except Exception as ex_b:
                             logger.debug(f"15m DCA bounce check error: {ex_b}")
 
-                    if bounce_confirmed:
-                        dca_ratio = float(engine_scale.get("dca_stake_pct_of_trade", 0.50))
+                    if bounce_confirmed and sl_dist_ok:
+                        if len(dca_done) == 0:
+                            dca_ratio = float(engine_scale.get("dca_stake_pct_1", engine_scale.get("dca_stake_pct_of_trade", 0.60)))
+                        else:
+                            dca_ratio = float(engine_scale.get("dca_stake_pct_2", 0.40))
+
                         stake_to_buy = initial_stake * dca_ratio
                         if (trade.stake_amount + stake_to_buy) <= max_stake and stake_to_buy >= min_stake_val:
                             dca_tag = f"dip_dca_{len(dca_done)+1}"
@@ -1979,7 +2039,7 @@ class InstitutionalDualStrategy(IStrategy):
                             trade.set_custom_data("executed_scale_ins", executed_scale_ins)
                             logger.info(
                                 f"[{engine_key.upper()} SCALE-IN DCA] Executing Dip DCA #{len(dca_done)+1} for {trade.pair}. "
-                                f"Profit: {current_profit:.2%}, Adding: ${stake_to_buy:.2f} ({dca_ratio:.0%} of initial)"
+                                f"Profit: {current_profit:.2%}, Adding: ${stake_to_buy:.2f} ({dca_ratio:.0%} of initial probe)"
                             )
                             return (stake_to_buy, dca_tag)
 
@@ -1988,7 +2048,7 @@ class InstitutionalDualStrategy(IStrategy):
                 pyr_trigger = float(engine_scale.get("pyramiding_profit_trigger", 0.025))
                 pyr_done = [x for x in executed_scale_ins if x.startswith("pyramid_")]
                 if current_profit >= pyr_trigger and len(pyr_done) < 1:
-                    pyr_ratio = float(engine_scale.get("pyramiding_stake_pct_of_trade", 0.50))
+                    pyr_ratio = float(engine_scale.get("pyramiding_stake_pct", engine_scale.get("pyramiding_stake_pct_of_trade", 0.50)))
                     stake_to_buy = initial_stake * pyr_ratio
                     if (trade.stake_amount + stake_to_buy) <= max_stake and stake_to_buy >= min_stake_val:
                         executed_scale_ins.append("pyramid_add")

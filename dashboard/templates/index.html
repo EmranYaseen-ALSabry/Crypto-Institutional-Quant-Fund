@@ -8,7 +8,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>منصة التحكم الكمي المؤسسي | Institutional Quant Fund Control Center</title>
+    <title>منصة الذكاء الاصطناعي للتداول الكمي | AI Quant Fund Command Center</title>
 
     <!-- Tailwind CSS CDN -->
 
@@ -222,7 +222,7 @@
 
                 <div class="overflow-hidden">
 
-                    <h1 class="text-base font-black tracking-wide text-white leading-tight">التحكم الكمي المؤسسي</h1>
+                    <h1 class="text-base font-black tracking-wide text-white leading-tight">الذكاء الاصطناعي الكمي</h1>
 
                     <div class="flex items-center gap-1.5 mt-0.5">
 
@@ -446,7 +446,7 @@
                 <button onclick="switchTab('tab-scale')" id="btn-tab-scale" class="sidebar-item w-full flex items-center justify-between px-3.5 py-3 rounded-xl font-medium text-sm transition text-slate-300 hover:text-white hover:bg-slate-800/80">
                     <div class="flex items-center gap-3">
                         <i data-lucide="layers" class="w-4 h-4 shrink-0 text-cyan-400"></i>
-                        <span>استوديو التدرج والمخطط (Scale Studio)</span>
+                        <span>التدرج والمخطط (Scale Studio)</span>
                     </div>
                     <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 font-bold">FLOW</span>
                 </button>
@@ -1184,20 +1184,21 @@
             <!-- ========================================================================= -->
             <!-- TAB: SCALE & FLOWCHART STUDIO (استوديو التدرج والمخطط الحي) -->
             <!-- ========================================================================= -->
+                        <!-- TAB: SCALE & FLOWCHART STUDIO -->
             <div id="tab-scale" class="tab-content hidden flex flex-col gap-6">
                 <!-- Header Banner -->
-                <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 border-r-4 border-cyan-500">
+                <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 border-r-4 border-cyan-500 shadow-xl">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-cyan-950/60 border border-cyan-800 flex items-center justify-center text-cyan-400">
+                        <div class="w-12 h-12 rounded-xl bg-cyan-950/60 border border-cyan-800 flex items-center justify-center text-cyan-400 shadow-inner">
                             <i data-lucide="layers" class="w-6 h-6"></i>
                         </div>
                         <div>
                             <h2 class="text-xl font-black text-white flex items-center gap-2">
-                                استوديو التحكم بالتدرج والمخطط الحي (Scale & Flowchart Studio)
+                                استوديو التدرج والهرمية والمخطط الحي (Scale & Flow Studio)
                                 <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono">DYNAMIC ENGINE</span>
                             </h2>
                             <p class="text-xs text-slate-400 mt-1">
-                                إدارة وتخصيص الدخول الجزئي عند الهبوط (Dip DCA)، الهرمية الصاعدة (Pyramiding)، وجني الأرباح المستقل مع عرض المخطط الانسيابي التفاعلي الحي.
+                                إدارة نسبة الدخول الأولي، التعزيز الذكي عند الهبوط (Dip DCA)، الهرمية الصاعدة (Pyramiding)، وجني الأرباح المستقل مع عرض المخطط الانسيابي التفاعلي اللحظي.
                             </p>
                         </div>
                     </div>
@@ -1215,24 +1216,44 @@
 
                 <!-- Main Settings Grid -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Card 1: Spot Scale Engine -->
+                    <!-- Column 1: Spot Scale Engine -->
                     <div class="glass-panel p-6 rounded-2xl flex flex-col gap-5 border border-slate-800">
                         <div class="flex items-center justify-between pb-3 border-b border-slate-800">
                             <div class="flex items-center gap-2.5">
                                 <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
                                 <h3 class="font-bold text-white text-base">السوق الفوري: Spot Scale Engine</h3>
                             </div>
-                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">SPOT ONLY</span>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 font-bold">SPOT ONLY</span>
                         </div>
 
-                        <!-- Dip DCA Section -->
+                        <!-- 1. Initial Partial Entry Sizing -->
+                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 flex flex-col gap-3">
+                            <div>
+                                <h4 class="font-bold text-sm text-white flex items-center gap-2">
+                                    <span>🚀 نسبة الدخول الجزئي الأولي (Initial Probe Stake)</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-400">تخصيص نسبة استطلاعية للدخول الأول من أصل حصة الصفقة والاحتفاظ بالباقي كاحتياطي تعزيز لتخفيف المخاطر.</p>
+                            </div>
+                            <div class="pt-2 border-t border-slate-800/60">
+                                <label class="text-[11px] font-semibold text-slate-400">نسبة الدخول الجزئي الأول من مبلغ الصفقة المعتمد</label>
+                                <select id="spot-initial-stake" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                    <option value="0.30">30% (دخول استطلاعي حذر - احتفاظ بـ 70% كاحتياطي)</option>
+                                    <option value="0.40" selected>40% (الموصى به مؤسسياً - احتفاظ بـ 60% كاحتياطي تعزيز)</option>
+                                    <option value="0.50">50% (نصف الحصة - 50% احتياطي تعزيز)</option>
+                                    <option value="0.60">60% (دخول قياسي)</option>
+                                    <option value="1.00">100% (دخول كامل بدون تجزئة أولية)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 2. Dip DCA Section -->
                         <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 flex flex-col gap-3">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h4 class="font-bold text-sm text-white flex items-center gap-2">
-                                        <span>📉 التعزيز عند الهبوط (Dip DCA)</span>
+                                        <span>📉 التعزيز الذكي عند الهبوط (Dip DCA)</span>
                                     </h4>
-                                    <p class="text-[11px] text-slate-400">إضافة شريحة عند تماسك الدعم لتخفيض متوسط التكلفة.</p>
+                                    <p class="text-[11px] text-slate-400">إضافة شريحة عند تماسك الدعم لتخفيض متوسط التكلفة وتأمين مسار الربح.</p>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" id="spot-dca-enable" class="sr-only peer" checked>
@@ -1242,30 +1263,65 @@
 
                             <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800/60">
                                 <div>
-                                    <label class="text-[11px] font-semibold text-slate-400">أقصى عدد مرات التعزيز</label>
-                                    <select id="spot-dca-max" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
-                                        <option value="1">1 (الافتراضي - تعزيز لمرة واحدة)</option>
-                                        <option value="2">2 (تعزيز على مرحلتين)</option>
-                                        <option value="3">3 (تعزيز مكثف)</option>
+                                    <label class="text-[11px] font-semibold text-slate-400">نسبة الهبوط لتفعيل التعزيز</label>
+                                    <select id="spot-dca-trigger" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                        <option value="-0.015">-1.5% (تعزيز مبكر)</option>
+                                        <option value="-0.018" selected>-1.8% (المعيار المؤسسي)</option>
+                                        <option value="-0.020">-2.0%</option>
+                                        <option value="-0.025">-2.5% (تراجع عميق)</option>
+                                        <option value="-0.030">-3.0%</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="text-[11px] font-semibold text-slate-400">نسبة الشريحة من الصفقة الأصلية</label>
-                                    <select id="spot-dca-ratio" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
-                                        <option value="0.30">30% من مبلغ الصفقة</option>
-                                        <option value="0.50" selected>50% من مبلغ الصفقة (الموصى به)</option>
-                                        <option value="0.75">75% من مبلغ الصفقة</option>
-                                        <option value="1.00">100% (مضاعفة المركز)</option>
+                                    <label class="text-[11px] font-semibold text-slate-400">أقصى عدد مرات التعزيز</label>
+                                    <select id="spot-dca-max" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                        <option value="1" selected>1 (الافتراضي - تعزيز لمرة واحدة)</option>
+                                        <option value="2">2 (تعزيز على مرحلتين)</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 pt-1 text-[11px] text-emerald-400">
-                                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
-                                <span>مشروط بظهور شمعة 15m خضراء ارتدادية لحظر السكاكين الهابطة.</span>
+
+                            <div class="grid grid-cols-2 gap-3 pt-1">
+                                <div>
+                                    <label class="text-[11px] font-semibold text-slate-400">شريحة التعزيز 1 (% من الدخول الأولي)</label>
+                                    <select id="spot-dca-ratio-1" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                        <option value="0.40">40% من الدخول</option>
+                                        <option value="0.50">50% من الدخول</option>
+                                        <option value="0.60" selected>60% (الموصى به - إكمال الحصة الكاملة)</option>
+                                        <option value="0.75">75% من الدخول</option>
+                                        <option value="1.00">100% (مضاعفة الدخول الأولي)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] font-semibold text-slate-400">شريحة التعزيز 2 (إن وجدت)</label>
+                                    <select id="spot-dca-ratio-2" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                        <option value="0.30">30% من الدخول</option>
+                                        <option value="0.40" selected>40% من الدخول</option>
+                                        <option value="0.50">50% من الدخول</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                                <div>
+                                    <label class="text-[11px] font-semibold text-slate-400">هامش أمان الوقف (Anti-Martingale)</label>
+                                    <select id="spot-sl-buffer" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                        <option value="0.008">0.8% (هامش ضيق)</option>
+                                        <option value="0.010">1.0%</option>
+                                        <option value="0.012" selected>1.2% (الموصى به - حظر التعزيز عند الخطر)</option>
+                                        <option value="0.015">1.5% (هامش أمان واسع)</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-2 pt-5">
+                                    <input type="checkbox" id="spot-dca-15m-green" class="rounded bg-slate-950 border-slate-800 text-emerald-500 focus:ring-0" checked>
+                                    <label for="spot-dca-15m-green" class="text-[11px] text-emerald-400 font-semibold cursor-pointer">
+                                        اشتراط شمعة 15m خضراء ارتدادية
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Breakout Pyramiding Section -->
+                        <!-- 3. Breakout Pyramiding Section -->
                         <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 flex flex-col gap-3">
                             <div class="flex items-center justify-between">
                                 <div>
@@ -1282,78 +1338,239 @@
 
                             <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800/60">
                                 <div>
-                                    <label class="text-[11px] font-semibold text-slate-400">شرط الربح لتفعيل الهرمية</label>
+                                    <label class="text-[11px] font-semibold text-slate-400">نسبة الربح لتفعيل الهرمية</label>
                                     <select id="spot-pyr-trigger" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
-                                        <option value="0.020">+2.0% ربح واختراق</option>
-                                        <option value="0.025" selected>+2.5% ربح واختراق</option>
-                                        <option value="0.035">+3.5% ربح واختراق</option>
+                                        <option value="0.015">+1.5% (مبكر)</option>
+                                        <option value="0.020">+2.0%</option>
+                                        <option value="0.025" selected>+2.5% (الموصى به - اختراق مؤكد)</option>
+                                        <option value="0.030">+3.0%</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="text-[11px] font-semibold text-slate-400">نسبة شريحة الهرمية</label>
+                                    <label class="text-[11px] font-semibold text-slate-400">شريحة الهرمية (% من الدخول الأولي)</label>
                                     <select id="spot-pyr-ratio" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
-                                        <option value="0.30">30% من مبلغ الصفقة</option>
-                                        <option value="0.50" selected>50% من مبلغ الصفقة</option>
-                                        <option value="0.75">75% من مبلغ الصفقة</option>
+                                        <option value="0.30">30% من الدخول</option>
+                                        <option value="0.40">40% من الدخول</option>
+                                        <option value="0.50" selected>50% من الدخول (الموصى به)</option>
+                                        <option value="0.60">60% من الدخول</option>
                                     </select>
                                 </div>
+                            </div>
+                            <div class="flex items-center gap-2 pt-1">
+                                <input type="checkbox" id="spot-pyr-be-lock" class="rounded bg-slate-950 border-slate-800 text-cyan-500 focus:ring-0" checked>
+                                <label for="spot-pyr-be-lock" class="text-[11px] text-cyan-400 font-semibold cursor-pointer">
+                                    رفع الوقف فوراً لنقطة التعادل (+0.2% Breakeven Lock) لتأمين الصفقة
+                                </label>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Card 2: Futures Scale Engine -->
+                    <!-- Column 2: Futures Scale Engine -->
                     <div class="glass-panel p-6 rounded-2xl flex flex-col gap-5 border border-slate-800">
                         <div class="flex items-center justify-between pb-3 border-b border-slate-800">
                             <div class="flex items-center gap-2.5">
-                                <span class="w-3 h-3 rounded-full bg-purple-400 animate-pulse"></span>
-                                <h3 class="font-bold text-white text-base">محرك المشتقات: Futures Scale Engine</h3>
+                                <span class="w-3 h-3 rounded-full bg-violet-400 animate-pulse"></span>
+                                <h3 class="font-bold text-white text-base">العقود الآجلة: Futures Scale Engine</h3>
                             </div>
-                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">LONGS & SHORTS</span>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-violet-950 text-violet-300 border border-violet-800 font-bold">FUTURES ONLY</span>
                         </div>
 
-                        <!-- Futures DCA Section -->
+                        <!-- 1. Futures Initial Partial Entry Sizing -->
+                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 flex flex-col gap-3">
+                            <div>
+                                <h4 class="font-bold text-sm text-white flex items-center gap-2">
+                                    <span>🚀 نسبة الدخول الجزئي الأولي (Futures Probe Stake)</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-400">تخصيص نسبة استطلاعية للدخول الأول لحساب الرافعة المالية والاحتفاظ بالسيولة كصمام أمان.</p>
+                            </div>
+                            <div class="pt-2 border-t border-slate-800/60">
+                                <label class="text-[11px] font-semibold text-slate-400">نسبة الدخول الجزئي الأول من مبلغ الصفقة المعتمد</label>
+                                <select id="fut-initial-stake" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                    <option value="0.30">30% (دخول استطلاعي حذر)</option>
+                                    <option value="0.40" selected>40% (الموصى به مؤسسياً - احتفاظ بـ 60% احتياطي)</option>
+                                    <option value="0.50">50% (نصف الحصة)</option>
+                                    <option value="0.60">60%</option>
+                                    <option value="1.00">100% (دخول كامل بدون تجزئة)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 2. Futures Dip DCA Section -->
                         <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 flex flex-col gap-3">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h4 class="font-bold text-sm text-white flex items-center gap-2">
-                                        <span>📉 التعزيز في العقود (Longs & Shorts DCA)</span>
+                                        <span>📉 التعزيز عند الارتداد (Dip DCA / Short Scale-In)</span>
                                     </h4>
-                                    <p class="text-[11px] text-slate-400">تعزيز الشراء عند الدعم، وتعزيز الشورت عند قمم المقاومة.</p>
+                                    <p class="text-[11px] text-slate-400">تعزيز الشراء في صفقات اللونج، أو تعزيز البيع عند قمم الارتداد في صفقات الشورت.</p>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" id="fut-dca-enable" class="sr-only peer" checked>
-                                    <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                    <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
                                 </label>
                             </div>
 
                             <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800/60">
                                 <div>
-                                    <label class="text-[11px] font-semibold text-slate-400">أقصى عدد تعزيزات</label>
-                                    <select id="fut-dca-max" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
-                                        <option value="1">1 (الافتراضي)</option>
-                                        <option value="2">2 (مرحلتين)</option>
+                                    <label class="text-[11px] font-semibold text-slate-400">نسبة التراجع لتفعيل التعزيز</label>
+                                    <select id="fut-dca-trigger" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                        <option value="-0.015">-1.5%</option>
+                                        <option value="-0.018" selected>-1.8% (المعيار المؤسسي)</option>
+                                        <option value="-0.020">-2.0%</option>
+                                        <option value="-0.025">-2.5%</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="text-[11px] font-semibold text-slate-400">نسبة شريحة العقود</label>
-                                    <select id="fut-dca-ratio" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
-                                        <option value="0.30">30% من مبلغ الصفقة</option>
-                                        <option value="0.50" selected>50% من مبلغ الصفقة</option>
+                                    <label class="text-[11px] font-semibold text-slate-400">أقصى عدد مرات التعزيز</label>
+                                    <select id="fut-dca-max" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                        <option value="1" selected>1 (الافتراضي - تعزيز لمرة واحدة)</option>
+                                        <option value="2">2 (تعزيز على مرحلتين)</option>
                                     </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 pt-1">
+                                <div>
+                                    <label class="text-[11px] font-semibold text-slate-400">شريحة التعزيز 1 (% من الدخول)</label>
+                                    <select id="fut-dca-ratio-1" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                        <option value="0.40">40% من الدخول</option>
+                                        <option value="0.50">50% من الدخول</option>
+                                        <option value="0.60" selected>60% (الموصى به للعقود)</option>
+                                        <option value="0.75">75% من الدخول</option>
+                                        <option value="1.00">100%</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] font-semibold text-slate-400">شريحة التعزيز 2 (إن وجدت)</label>
+                                    <select id="fut-dca-ratio-2" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                        <option value="0.30">30% من الدخول</option>
+                                        <option value="0.40" selected>40% من الدخول</option>
+                                        <option value="0.50">50% من الدخول</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                                <div>
+                                    <label class="text-[11px] font-semibold text-slate-400">هامش أمان الوقف (Anti-Martingale)</label>
+                                    <select id="fut-sl-buffer" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                        <option value="0.008">0.8%</option>
+                                        <option value="0.010">1.0%</option>
+                                        <option value="0.012" selected>1.2% (الموصى به لحماية رأس المال)</option>
+                                        <option value="0.015">1.5%</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-2 pt-5">
+                                    <input type="checkbox" id="fut-dca-15m-green" class="rounded bg-slate-950 border-slate-800 text-violet-500 focus:ring-0" checked>
+                                    <label for="fut-dca-15m-green" class="text-[11px] text-violet-400 font-semibold cursor-pointer">
+                                        تأكيد شمعة 15m ارتدادية متناظرة
+                                    </label>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Independent TP & Ratchet Guarantee Banner -->
-                        <div class="bg-cyan-950/40 p-4 rounded-xl border border-cyan-800/60 flex flex-col gap-2">
-                            <div class="flex items-center gap-2 text-cyan-400 font-bold text-xs">
-                                <i data-lucide="check-circle" class="w-4 h-4"></i>
-                                <span>الضمانات المؤسسية المفعلة ذاتياً:</span>
+                        <!-- 3. Futures Breakout Pyramiding Section -->
+                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 flex flex-col gap-3">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-bold text-sm text-white flex items-center gap-2">
+                                        <span>📈 الهرمية الصاعدة للعقود (Futures Pyramiding)</span>
+                                    </h4>
+                                    <p class="text-[11px] text-slate-400">إضافة قوة مع الاتجاه عند الاختراق مع رفع الوقف لنقطة التعادل.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="fut-pyr-enable" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+                                </label>
                             </div>
-                            <ul class="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
-                                <li><strong>جني أرباح مستقل 100%:</strong> Stage 1 (+1.5%) و Stage 2 (+3.0%) تعمل دائماً دون تأخير.</li>
-                                <li><strong>الوقف المسنن (Monotonic Ratchet):</strong> للـ Runner (35%) يتصاعد آلياً مع قمم الترند ولا يتراجع أبداً.</li>
+
+                            <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800/60">
+                                <div>
+                                    <label class="text-[11px] font-semibold text-slate-400">نسبة الربح لتفعيل الهرمية</label>
+                                    <select id="fut-pyr-trigger" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                        <option value="0.015">+1.5%</option>
+                                        <option value="0.020">+2.0%</option>
+                                        <option value="0.025" selected>+2.5% (الموصى به)</option>
+                                        <option value="0.030">+3.0%</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] font-semibold text-slate-400">شريحة الهرمية (% من الدخول الأولي)</label>
+                                    <select id="fut-pyr-ratio" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                        <option value="0.30">30% من الدخول</option>
+                                        <option value="0.40">40% من الدخول</option>
+                                        <option value="0.50" selected>50% من الدخول</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 pt-1">
+                                <input type="checkbox" id="fut-pyr-be-lock" class="rounded bg-slate-950 border-slate-800 text-violet-500 focus:ring-0" checked>
+                                <label for="fut-pyr-be-lock" class="text-[11px] text-violet-400 font-semibold cursor-pointer">
+                                    رفع الوقف فوراً لنقطة التعادل (+0.2% Breakeven Lock) لتأمين المركز
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Global Scale-Out & Runner Ratchet Engine -->
+                <div class="glass-panel p-6 rounded-2xl flex flex-col gap-5 border border-slate-800">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-3 h-3 rounded-full bg-cyan-400"></span>
+                            <h3 class="font-bold text-white text-base">استقلالية جني الأرباح والوقف المسنن للـ Runner 35%</h3>
+                        </div>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 font-bold">ALL ENGINES</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Take-Profit Independence -->
+                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 flex flex-col gap-3">
+                            <h4 class="font-bold text-sm text-white flex items-center gap-2">
+                                <span>🎯 جني الأرباح المستقل والتام (Decoupled Scale-Out)</span>
+                            </h4>
+                            <p class="text-[11px] text-slate-400">
+                                يعمل جني الأرباح كمسار حر وغير مشروط بحالة الهرمية (سواء تفعلت الهرمية أم لا):
+                            </p>
+                            <ul class="text-xs text-slate-300 space-y-1.5 font-mono">
+                                <li class="flex items-center gap-2 text-emerald-400">
+                                    <span>•</span>
+                                    <span>المرحلة 1: عند تحقيق ربح +1.5% ⬅️ بيع 30% كاش وتأمين الحساب.</span>
+                                </li>
+                                <li class="flex items-center gap-2 text-cyan-400">
+                                    <span>•</span>
+                                    <span>المرحلة 2: عند تحقيق ربح +3.0% ⬅️ بيع 35% كاش + قفل الوقف فوراً عند +1.5%.</span>
+                                </li>
                             </ul>
+                        </div>
+
+                        <!-- 35% Runner Monotonic Ratchet -->
+                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 flex flex-col gap-3">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-bold text-sm text-white flex items-center gap-2">
+                                        <span>🏆 الوقف المسنن للـ Runner 35% (Monotonic Ratchet)</span>
+                                    </h4>
+                                    <p class="text-[11px] text-slate-400">قفل الأرباح تصاعدياً في اتجاه واحد دون تراجع عند تسجيل قمم جديدة.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="runner-ratchet-enable" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                                </label>
+                            </div>
+
+                            <div class="pt-2 border-t border-slate-800/60 flex items-center justify-between">
+                                <label class="text-[11px] font-semibold text-slate-400">مسافة التتبع للوقف المسنن (Trail %)</label>
+                                <select id="runner-ratchet-trail" class="w-48 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+                                    <option value="0.010">1.0% (تتبع لصيق جداً)</option>
+                                    <option value="0.015" selected>1.5% (الموصى به - تتبع مرن)</option>
+                                    <option value="0.020">2.0% (تتبع واسع)</option>
+                                </select>
+                            </div>
+
+                            <p class="text-[11px] text-cyan-400">
+                                🛡️ التسنن المؤسسي: قفل ربح +1.5% عند الهدف الثاني، قفل +4.5% عند وصول +6%، وقفل +8% عند وصول +10%.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -1361,30 +1578,45 @@
 
             <!-- FLOWCHART MODAL -->
             <div id="flowchart-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-                <div class="glass-panel w-full max-w-4xl max-h-[90vh] rounded-2xl flex flex-col border border-cyan-800/80 shadow-2xl overflow-hidden">
+                <div class="glass-panel w-full max-w-5xl max-h-[92vh] rounded-2xl flex flex-col border border-cyan-800/80 shadow-2xl overflow-hidden">
                     <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
                         <div class="flex items-center gap-3">
                             <i data-lucide="git-branch" class="w-5 h-5 text-cyan-400"></i>
-                            <h3 class="font-bold text-white text-base">المخطط الانسيابي التفاعلي الحي (Live Dynamic Flowchart)</h3>
+                            <div>
+                                <h3 class="font-bold text-white text-base">المخطط الانسيابي التفاعلي اللحظي (Live Dynamic Mermaid Flowchart)</h3>
+                                <p class="text-xs text-slate-400">يتم توليد هذا المخطط ديناميكياً بناءً على إعداداتك وتخصيصاتك الحالية</p>
+                            </div>
                         </div>
                         <button onclick="closeFlowchartModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition">
                             <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
                     </div>
-                    <div class="p-6 overflow-y-auto flex items-center justify-center min-h-[400px] bg-slate-950/60" id="flowchart-render-box">
+
+                    <!-- Flowchart Live Parameters Bar -->
+                    <div id="flowchart-params-bar" class="px-6 py-3 bg-slate-900/60 border-b border-slate-800 flex flex-wrap gap-2 text-xs">
+                        <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 font-mono">جاري تحميل المعلمات...</span>
+                    </div>
+
+                    <!-- Flowchart Render Box -->
+                    <div class="p-6 overflow-auto flex items-center justify-center min-h-[460px] max-h-[65vh] bg-slate-950/70" id="flowchart-render-box">
                         <div class="text-cyan-400 animate-pulse flex items-center gap-2">
                             <i data-lucide="loader" class="w-5 h-5 animate-spin"></i>
-                            <span>جاري رسم المخطط الانسيابي وفق إعداداتك اللحظية...</span>
+                            <span>جاري قراءة المعلمات ورسم المخطط الانسيابي...</span>
                         </div>
                     </div>
+
                     <div class="p-4 border-t border-slate-800 flex items-center justify-between bg-slate-900/80 text-xs text-slate-400">
-                        <span>يتم إنشاء هذا المخطط ديناميكياً ليعكس تخصيصك الحالي بدقة 100%.</span>
-                        <button onclick="closeFlowchartModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium transition">إغلاق</button>
+                        <div class="flex items-center gap-2 text-emerald-400">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            <span>متطابق بنسبة 100% مع منطق محركات Freqtrade المباشرة.</span>
+                        </div>
+                        <button onclick="closeFlowchartModal()" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium transition">إغلاق</button>
                     </div>
                 </div>
             </div>
 
-<div id="tab-risk-spot" class="tab-content hidden flex flex-col gap-6">
+
+            <div id="tab-risk-spot" class="tab-content hidden flex flex-col gap-6">
 
                 <!-- Master Status Banner -->
 
@@ -9213,16 +9445,40 @@ async function loadScaleSettings() {
         const spot = data.spot || {};
         const fut = data.futures || {};
 
+        // Spot settings
+        if (document.getElementById('spot-initial-stake')) document.getElementById('spot-initial-stake').value = (spot.initial_stake_pct || 0.40).toFixed(2);
         if (document.getElementById('spot-dca-enable')) document.getElementById('spot-dca-enable').checked = spot.enable_dip_dca !== false;
+        if (document.getElementById('spot-dca-trigger')) document.getElementById('spot-dca-trigger').value = (spot.dca_trigger_drawdown_pct || -0.018).toFixed(3);
         if (document.getElementById('spot-dca-max')) document.getElementById('spot-dca-max').value = spot.max_dca_count || 1;
-        if (document.getElementById('spot-dca-ratio')) document.getElementById('spot-dca-ratio').value = (spot.dca_stake_pct_of_trade || 0.50).toFixed(2);
+        if (document.getElementById('spot-dca-ratio-1')) document.getElementById('spot-dca-ratio-1').value = (spot.dca_stake_pct_1 || 0.60).toFixed(2);
+        if (document.getElementById('spot-dca-ratio-2')) document.getElementById('spot-dca-ratio-2').value = (spot.dca_stake_pct_2 || 0.40).toFixed(2);
+        if (document.getElementById('spot-sl-buffer')) document.getElementById('spot-sl-buffer').value = (spot.min_dist_to_sl_pct || 0.012).toFixed(3);
+        if (document.getElementById('spot-dca-15m-green')) document.getElementById('spot-dca-15m-green').checked = spot.dca_require_15m_green !== false;
+
         if (document.getElementById('spot-pyr-enable')) document.getElementById('spot-pyr-enable').checked = !!spot.enable_pyramiding;
         if (document.getElementById('spot-pyr-trigger')) document.getElementById('spot-pyr-trigger').value = (spot.pyramiding_profit_trigger || 0.025).toFixed(3);
-        if (document.getElementById('spot-pyr-ratio')) document.getElementById('spot-pyr-ratio').value = (spot.pyramiding_stake_pct_of_trade || 0.50).toFixed(2);
+        if (document.getElementById('spot-pyr-ratio')) document.getElementById('spot-pyr-ratio').value = (spot.pyramiding_stake_pct || 0.50).toFixed(2);
+        if (document.getElementById('spot-pyr-be-lock')) document.getElementById('spot-pyr-be-lock').checked = spot.pyramiding_breakeven_lock !== false;
 
+        // Futures settings
+        if (document.getElementById('fut-initial-stake')) document.getElementById('fut-initial-stake').value = (fut.initial_stake_pct || 0.40).toFixed(2);
         if (document.getElementById('fut-dca-enable')) document.getElementById('fut-dca-enable').checked = fut.enable_dip_dca !== false;
+        if (document.getElementById('fut-dca-trigger')) document.getElementById('fut-dca-trigger').value = (fut.dca_trigger_drawdown_pct || -0.018).toFixed(3);
         if (document.getElementById('fut-dca-max')) document.getElementById('fut-dca-max').value = fut.max_dca_count || 1;
-        if (document.getElementById('fut-dca-ratio')) document.getElementById('fut-dca-ratio').value = (fut.dca_stake_pct_of_trade || 0.50).toFixed(2);
+        if (document.getElementById('fut-dca-ratio-1')) document.getElementById('fut-dca-ratio-1').value = (fut.dca_stake_pct_1 || 0.60).toFixed(2);
+        if (document.getElementById('fut-dca-ratio-2')) document.getElementById('fut-dca-ratio-2').value = (fut.dca_stake_pct_2 || 0.40).toFixed(2);
+        if (document.getElementById('fut-sl-buffer')) document.getElementById('fut-sl-buffer').value = (fut.min_dist_to_sl_pct || 0.012).toFixed(3);
+        if (document.getElementById('fut-dca-15m-green')) document.getElementById('fut-dca-15m-green').checked = fut.dca_require_15m_green !== false;
+
+        if (document.getElementById('fut-pyr-enable')) document.getElementById('fut-pyr-enable').checked = !!fut.enable_pyramiding;
+        if (document.getElementById('fut-pyr-trigger')) document.getElementById('fut-pyr-trigger').value = (fut.pyramiding_profit_trigger || 0.025).toFixed(3);
+        if (document.getElementById('fut-pyr-ratio')) document.getElementById('fut-pyr-ratio').value = (fut.pyramiding_stake_pct || 0.50).toFixed(2);
+        if (document.getElementById('fut-pyr-be-lock')) document.getElementById('fut-pyr-be-lock').checked = fut.pyramiding_breakeven_lock !== false;
+
+        // Global Ratchet
+        if (document.getElementById('runner-ratchet-enable')) document.getElementById('runner-ratchet-enable').checked = data.runner_ratchet_enabled !== false;
+        if (document.getElementById('runner-ratchet-trail')) document.getElementById('runner-ratchet-trail').value = (data.runner_ratchet_trail_pct || 0.015).toFixed(3);
+
     } catch (e) {
         console.error("Error loading scale settings:", e);
     }
@@ -9232,25 +9488,35 @@ async function saveScaleSettings() {
     const payload = {
         enabled: true,
         independent_take_profit: true,
-        runner_ratchet_enabled: true,
-        runner_ratchet_trail_pct: 0.015,
+        runner_ratchet_enabled: document.getElementById('runner-ratchet-enable') ? document.getElementById('runner-ratchet-enable').checked : true,
+        runner_ratchet_trail_pct: document.getElementById('runner-ratchet-trail') ? parseFloat(document.getElementById('runner-ratchet-trail').value) : 0.015,
         spot: {
+            initial_stake_pct: parseFloat(document.getElementById('spot-initial-stake').value),
             enable_dip_dca: document.getElementById('spot-dca-enable').checked,
             max_dca_count: parseInt(document.getElementById('spot-dca-max').value),
-            dca_stake_pct_of_trade: parseFloat(document.getElementById('spot-dca-ratio').value),
-            dca_require_15m_green: true,
+            dca_trigger_drawdown_pct: parseFloat(document.getElementById('spot-dca-trigger').value),
+            dca_stake_pct_1: parseFloat(document.getElementById('spot-dca-ratio-1').value),
+            dca_stake_pct_2: parseFloat(document.getElementById('spot-dca-ratio-2').value),
+            dca_require_15m_green: document.getElementById('spot-dca-15m-green').checked,
+            min_dist_to_sl_pct: parseFloat(document.getElementById('spot-sl-buffer').value),
             enable_pyramiding: document.getElementById('spot-pyr-enable').checked,
             pyramiding_profit_trigger: parseFloat(document.getElementById('spot-pyr-trigger').value),
-            pyramiding_stake_pct_of_trade: parseFloat(document.getElementById('spot-pyr-ratio').value)
+            pyramiding_stake_pct: parseFloat(document.getElementById('spot-pyr-ratio').value),
+            pyramiding_breakeven_lock: document.getElementById('spot-pyr-be-lock').checked
         },
         futures: {
+            initial_stake_pct: parseFloat(document.getElementById('fut-initial-stake').value),
             enable_dip_dca: document.getElementById('fut-dca-enable').checked,
             max_dca_count: parseInt(document.getElementById('fut-dca-max').value),
-            dca_stake_pct_of_trade: parseFloat(document.getElementById('fut-dca-ratio').value),
-            dca_require_15m_green: true,
-            enable_pyramiding: false,
-            pyramiding_profit_trigger: 0.025,
-            pyramiding_stake_pct_of_trade: 0.50
+            dca_trigger_drawdown_pct: parseFloat(document.getElementById('fut-dca-trigger').value),
+            dca_stake_pct_1: parseFloat(document.getElementById('fut-dca-ratio-1').value),
+            dca_stake_pct_2: parseFloat(document.getElementById('fut-dca-ratio-2').value),
+            dca_require_15m_green: document.getElementById('fut-dca-15m-green').checked,
+            min_dist_to_sl_pct: parseFloat(document.getElementById('fut-sl-buffer').value),
+            enable_pyramiding: document.getElementById('fut-pyr-enable').checked,
+            pyramiding_profit_trigger: parseFloat(document.getElementById('fut-pyr-trigger').value),
+            pyramiding_stake_pct: parseFloat(document.getElementById('fut-pyr-ratio').value),
+            pyramiding_breakeven_lock: document.getElementById('fut-pyr-be-lock').checked
         }
     };
 
@@ -9262,9 +9528,9 @@ async function saveScaleSettings() {
         });
         const res = await resp.json();
         if (res.status === 'saved') {
-            alert('تم حفظ إعدادات التدرج والهرمية بنجاح وتطبيقها فوراً على المحركات!');
+            alert('تم حفظ وتطبيق إعدادات التدرج والهرمية والدخول الأولي بنجاح على استراتيجية الصناديق!');
         } else {
-            alert('حدث خطأ أثناء الحفظ.');
+            alert('حدث خطأ أثناء حفظ الإعدادات.');
         }
     } catch (e) {
         alert('فشل الاتصال بالسيرفر لحفظ الإعدادات: ' + e);
@@ -9274,21 +9540,44 @@ async function saveScaleSettings() {
 async function openFlowchartModal() {
     const modal = document.getElementById('flowchart-modal');
     const box = document.getElementById('flowchart-render-box');
+    const paramsBar = document.getElementById('flowchart-params-bar');
     modal.classList.remove('hidden');
-    box.innerHTML = '<div class="text-cyan-400 animate-pulse flex items-center gap-2"><i data-lucide="loader" class="w-5 h-5 animate-spin"></i><span>جاري رسم المخطط الانسيابي اللحظي...</span></div>';
+    box.innerHTML = '<div class="text-cyan-400 animate-pulse flex items-center gap-2"><i data-lucide="loader" class="w-5 h-5 animate-spin"></i><span>جاري رسم المخطط الانسيابي التفاعلي...</span></div>';
     if (window.lucide) lucide.createIcons();
 
     try {
         const resp = await fetch('/api/scale_management/flowchart');
         const data = await resp.json();
         const mermaidSyntax = data.mermaid;
+        const s = data.settings || {};
+        const spot = s.spot || {};
 
-        box.innerHTML = `<div class="mermaid text-center w-full" id="mermaid-dynamic-svg">${mermaidSyntax}</div>`;
+        // Update parameters badges bar
+        const initStake = ((spot.initial_stake_pct || 0.40) * 100).toFixed(0);
+        const dcaActive = spot.enable_dip_dca !== false ? 'مفعل (' + (spot.max_dca_count || 1) + ' مرة)' : 'معطل';
+        const dcaTrig = ((spot.dca_trigger_drawdown_pct || -0.018) * 100).toFixed(1);
+        const slBuf = ((spot.min_dist_to_sl_pct || 0.012) * 100).toFixed(1);
+        const pyrActive = spot.enable_pyramiding ? 'مفعلة' : 'معطلة';
+
+        paramsBar.innerHTML = `
+            <span class="px-2.5 py-1 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-800 font-mono font-bold">الدخول الأولي: ${initStake}%</span>
+            <span class="px-2.5 py-1 rounded bg-slate-800 text-emerald-400 font-mono font-bold">التعزيز DCA: ${dcaActive} @ ${dcaTrig}%</span>
+            <span class="px-2.5 py-1 rounded bg-slate-800 text-amber-400 font-mono font-bold">هامش أمان الوقف: ${slBuf}%</span>
+            <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 font-mono">15m ارتداد: مفعل</span>
+            <span class="px-2.5 py-1 rounded bg-slate-800 text-indigo-400 font-mono font-bold">الهرمية: ${pyrActive}</span>
+            <span class="px-2.5 py-1 rounded bg-slate-800 text-emerald-300 font-mono">جني الأرباح: مستقل (+1.5% / +3.0%)</span>
+            <span class="px-2.5 py-1 rounded bg-cyan-950/60 text-cyan-400 border border-cyan-800/60 font-mono">الوقف المسنن: 35% Runner</span>
+        `;
+
         if (window.mermaid) {
-            await mermaid.run({ nodes: [document.getElementById('mermaid-dynamic-svg')] });
+            const id = 'mermaid-dynamic-' + Date.now();
+            const { svg } = await mermaid.render(id, mermaidSyntax);
+            box.innerHTML = svg;
+        } else {
+            box.innerHTML = `<pre class="text-xs text-slate-300 font-mono">${mermaidSyntax}</pre>`;
         }
     } catch (e) {
-        box.innerHTML = `<div class="text-rose-400">فشل رسم المخطط: ${e}</div>`;
+        box.innerHTML = `<div class="text-rose-400 font-bold p-4 bg-rose-950/30 rounded-xl border border-rose-800">خطأ في توليد المخطط: ${e}</div>`;
     }
 }
 
